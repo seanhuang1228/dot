@@ -1,7 +1,7 @@
-%! Tex program = xelatex
+%! Tex program = lualatex
 \documentclass[12pt, a4paper]{article}
 
-\usepackage{xeCJK}
+\usepackage{luatexja-fontspec}
 \usepackage{listings}
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -9,11 +9,41 @@
 \usepackage{setspace}
 \usepackage{hyperref}
 \usepackage{enumerate}
+\usepackage{stmaryrd}
 \usepackage[x11names]{xcolor}
 \usepackage[mathscr]{euscript}
+\usepackage{xparse}
+
+% Diagram
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+
+% Plot
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
 
 \newcommand{\curly}{\rightsquigarrow}
 \newcommand{\documentname}{文件名稱}
+\newcommand{\inlinebmatrix}[1]{
+  \big[\begin{smallmatrix}
+      #1
+  \end{smallmatrix}\big]
+}
+
+% environment for tikz diagram
+\makeatletter
+\NewDocumentEnvironment{centertikz}{m}
+{
+  \begin{figure}[!h]
+    \centering
+    \begin{tikzpicture}
+}
+{
+    \end{tikzpicture}
+    \caption{#1}
+  \end{figure}
+}
+\makeatother
 
 \makeatletter
 \renewcommand*\env@matrix[1][*\c@MaxMatrixCols c]{%
@@ -22,7 +52,7 @@
   \array{#1}}
 \makeatother
 
-\setCJKmainfont{Noto Sans TC}
+\setmainjfont{Source Han Sans TW}
 
 \topmargin=0pt
 \headheight=15pt
@@ -62,6 +92,14 @@
   stringstyle=\itshape\color{Green4},
   frame=single,
   rulecolor=\color{black},
+}
+
+% tikz diagram component
+\tikzset {
+states/.style={circle, draw, minimum size=15mm},
+accept/.style={circle, draw, double, minimum size=15mm},
+ptr/.style={->, >={stealth},},
+init/.style={circle},
 }
 
 \begin{document}
