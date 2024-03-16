@@ -494,7 +494,7 @@ require('lazy').setup({
       formatters_by_ft = {
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
-        -- python = { "isort", "black" },
+        python = { 'isort', 'black' },
         --
         -- You can use a sub-list to tell conform to run *until* a formatter
         -- is found.
@@ -519,6 +519,12 @@ require('lazy').setup({
           end
           return 'make install_jsregexp'
         end)(),
+        dependencies = {
+          'rafamadriz/friendly-snippets',
+        },
+        config = function()
+          require('luasnip.loaders.from_vscode').lazy_load()
+        end,
       },
       'saadparwaiz1/cmp_luasnip',
 
@@ -533,7 +539,6 @@ require('lazy').setup({
       --    you can use this plugin to help you. It even has snippets
       --    for various frameworks/libraries/etc. but you will have to
       --    set up the ones that are useful for you.
-      -- 'rafamadriz/friendly-snippets',
     },
     config = function()
       -- See `:help cmp`
