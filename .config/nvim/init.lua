@@ -534,11 +534,8 @@ require('lazy').setup({
       'hrsh7th/cmp-nvim-lsp',
       'hrsh7th/cmp-path',
 
-      -- NOTE: We can try to use this!
-      -- If you want to add a bunch of pre-configured snippets,
-      --    you can use this plugin to help you. It even has snippets
-      --    for various frameworks/libraries/etc. but you will have to
-      --    set up the ones that are useful for you.
+      -- icons
+      'onsails/lspkind.nvim',
     },
     config = function()
       -- See `:help cmp`
@@ -598,6 +595,16 @@ require('lazy').setup({
           { name = 'nvim_lsp' },
           { name = 'luasnip' },
           { name = 'path' },
+        },
+        formatting = {
+          format = require('lspkind').cmp_format {
+            mode = 'symbol',
+            maxwidth = 50,
+            ellipsis_char = '...',
+            symbol_map = {
+              Codeium = '',
+            },
+          },
         },
       }
     end,
