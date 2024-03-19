@@ -13,12 +13,12 @@ This nvim configuration is base on [Kickstart](https://github.com/nvim-lua/kicks
 
 This config also use [conform](https://github.com/stevearc/conform.nvim) for auto-formatting files. Base on default config, I use [uncrustify][uncrustify] for c* files, be sure you have installed it if you want to use it too.
 
-You can check `.uncrustify.cfg` in the `/nvim` in the repo for the config.
+You can check `.uncrustify.cfg` in the `/nvim` in the repo for the config, or just find this plugin in `init.lua` and remove the config for c*
 
 #### Key bindings
 
 | key | action |
 | --- | ------ |
-| <Leader>rf | reformat current buffer |
+| \<Leader\>rf | reformat current buffer |
 
 [uncrustify]: https://github.com/uncrustify/uncrustify
