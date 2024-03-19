@@ -21,4 +21,4 @@ You can check `.uncrustify.cfg` in the `/nvim` in the repo for the config.
 | --- | ------ |
 | <Leader>rf | reformat current buffer |
 
-[uncrustify](https://github.com/uncrustify/uncrustify)
+[uncrustify]: https://github.com/uncrustify/uncrustify
