@@ -9,7 +9,7 @@ return {
         vim.keymap.set('n', keys, func, { desc = 'Hop: ' .. desc })
       end
 
-      map('<leader>hw', ':HopWord<cr>', 'Hop: Word')
+      map('<leader>hw', ':HopWord<cr>', '[H]op [W]ord')
     end,
   },
 }

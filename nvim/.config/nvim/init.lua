@@ -217,6 +217,8 @@ require('lazy').setup({
         ['<leader>r'] = { name = '[R]e-', _ = 'which_key_ignore' },
         ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
         ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
+        ['<leader>h'] = { name = '[H]op', _ = 'which_key_ignore' },
+        ['<leader>m'] = { name = '[M]isc', _ = 'which_key_ignore' },
       }
     end,
   },
