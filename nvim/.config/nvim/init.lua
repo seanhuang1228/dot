@@ -161,6 +161,13 @@ vim.api.nvim_create_autocmd('BufNewFile', {
   group = texGrp,
 })
 
+-- [[ Custom Filetypes ]]
+vim.filetype.add {
+  extension = {
+    mdx = 'mdx',
+  },
+}
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
