@@ -8,6 +8,7 @@ This nvim configuration is base on [Kickstart](https://github.com/nvim-lua/kicks
 
 - [uncrustify][uncrustify]: for c* auto-formatting, check [Formatting](#formatting) if you don't need it.
 - [npm](https://www.npmjs.com/): The dependency for `pylsp`, remove it in `init.lua` and ignore this if you hate python.
+- [rust](https://www.rust-lang.org/): The dependency for [nvim-silicon](#Code Snapshot).
 
 ### Formatting
 
@@ -21,4 +22,15 @@ You can check `.uncrustify.cfg` in the `/nvim` in the repo for the config, or ju
 | --- | ------ |
 | \<Leader\>rf | reformat current buffer |
 
+### Code Snapshot
+
+I use [silicon-nvim][silicon-nvim] to generate the code snapshot. The advantage is that you can do it without mouse and provide enough custom setting. The config file is in the `silicon.lua` in the custom plugin directory.
+
+#### Key bindings
+
+| key | action |
+| --- | ------ |
+| \<Leader\>ms | take a snapshot for the codes selected in visual mode |
+
 [uncrustify]: https://github.com/uncrustify/uncrustify
+[silicon-nvim]: https://github.com/michaelrommel/nvim-silicon
