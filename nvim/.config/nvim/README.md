@@ -32,5 +32,17 @@ I use [silicon-nvim][silicon-nvim] to generate the code snapshot. The advantage 
 | --- | ------ |
 | \<Leader\>ms | take a snapshot for the codes selected in visual mode |
 
+### Markdown
+
+I use [markdown-preview][markdown-preview] to preview markdown file. Config file is in the `markdown.lua` ins the custom plugin directory.
+
+#### Key bindings
+
+| key | action |
+| --- | ------ |
+| \<Leader\>mm | toggle markdown preview |
+
+
 [uncrustify]: https://github.com/uncrustify/uncrustify
 [silicon-nvim]: https://github.com/michaelrommel/nvim-silicon
+[markdown-preview]: https://github.com/iamcco/markdown-preview.nvim

@@ -7,7 +7,9 @@ return {
     init = function()
       vim.g.mkdp_filetypes = { 'markdown', 'mdx' }
     end,
-    opt = {},
+    config = function()
+      vim.keymap.set('n', '<Leader>mm', ':MarkdownPreviewToggle<CR>', { desc = '[M]isc: [M]arkdown Preview' })
+    end,
     ft = { 'markdown', 'mdx' },
   },
 }
