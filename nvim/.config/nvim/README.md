@@ -34,7 +34,7 @@ I use [silicon-nvim][silicon-nvim] to generate the code snapshot. The advantage 
 
 ### Markdown
 
-I use [markdown-preview][markdown-preview] to preview markdown file. Config file is in the `markdown.lua` ins the custom plugin directory.
+I use [markdown-preview][markdown-preview] to preview markdown file. Config file is in the `markdown.lua` in the custom plugin directory.
 
 #### Key bindings
 
@@ -42,7 +42,18 @@ I use [markdown-preview][markdown-preview] to preview markdown file. Config file
 | --- | ------ |
 | \<Leader\>mm | toggle markdown preview |
 
+### Linter
+
+I use [nvim-lint][nvim-lint] and [mason-nvim-lint][mason-nvim-lint] to manage linter (but I notice that the lsp is enough for me now). Config file is in the `linter.lua` in the custom plugin directory.
+
+#### Key bindings
+
+| key | action |
+| --- | ------ |
+| \<Leader\>cl | Lint current buffer |
 
 [uncrustify]: https://github.com/uncrustify/uncrustify
 [silicon-nvim]: https://github.com/michaelrommel/nvim-silicon
 [markdown-preview]: https://github.com/iamcco/markdown-preview.nvim
+[nvim-lint]: https://github.com/mfussenegger/nvim-lint
+[mason-nvim-lint]: https://github.com/rshkarin/mason-nvim-lint
