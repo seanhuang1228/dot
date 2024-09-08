@@ -100,3 +100,10 @@ zinit snippet PZT::modules/docker/alias.zsh
 
 # key binding
 bindkey ',' autosuggest-accept
+
+# github settings
+export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_rsa"
+
+# texlive settings
+export TEXMFDIST="/usr/share/texmf-dist"
+alias tlmgr='$TEXMFDIST/scripts/texlive/tlmgr.pl --usermode'
