@@ -9,7 +9,7 @@ return {
   end,
   config = function()
     require('silicon').setup {
-      font = 'Hurmit Nerd Font Mono=20',
+      font = 'ProFont IIx Nerd Font Mono=20',
       theme = 'Nord',
       background = '#20b2aa',
       pad_horiz = 60,
