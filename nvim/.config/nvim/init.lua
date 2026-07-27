@@ -7,6 +7,10 @@ vim.g.maplocalleader = ' '
 vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
+-- encoding settings
+-- vim.opt.encoding = 'utf-8'
+-- vim.opt.fileencoding = 'utf-8'
+-- vim.opt.fileencodings = 'utf-8'
 
 -- Whitespace as tab with width 2
 vim.o.tabstop = 2
@@ -93,6 +97,9 @@ vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
 vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
 vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
 vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
+vim.keymap.set('n', '<leader>mt', function()
+  vim.cmd 'tabclose'
+end, { desc = '[M]isc tabclose' })
 
 -- Keybinds to make split navigation easier.
 --  Use CTRL+<hjkl> to switch between windows
@@ -200,15 +207,26 @@ require('lazy').setup({
 
   { -- Adds git related signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
-    opts = {
-      signs = {
-        add = { text = '+' },
-        change = { text = '~' },
-        delete = { text = '_' },
-        topdelete = { text = '‾' },
-        changedelete = { text = '~' },
-      },
-    },
+    config = function()
+      local gitsigns = require 'gitsigns'
+
+      gitsigns.setup {
+        signs = {
+          add = { text = '+' },
+          change = { text = '~' },
+          delete = { text = '_' },
+          topdelete = { text = '‾' },
+          changedelete = { text = '~' },
+        },
+      }
+
+      vim.keymap.set('n', 'gn', function()
+        gitsigns.nav_hunk 'next'
+      end, { desc = '[G]it [N]ext Hunk' })
+      vim.keymap.set('n', 'gp', function()
+        gitsigns.nav_hunk 'prev'
+      end, { desc = '[G]it [P]rev Hunk' })
+    end,
   },
 
   { -- Useful plugin to show you pending keybinds.
@@ -225,6 +243,7 @@ require('lazy').setup({
         { '<leader>s', group = '[S]earch' },
         { '<leader>w', group = '[W]orkspace' },
         { '<leader>h', group = '[H]op' },
+        { '<leader>g', group = '[G]it' },
         { '<leader>m', group = '[M]isc' },
       }
     end,
@@ -313,6 +332,8 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sn', function()
         builtin.find_files { cwd = vim.fn.stdpath 'config' }
       end, { desc = '[S]earch [N]eovim files' })
+
+      -- TODO: add a shortcut to CLAUDE config
     end,
   },
 
