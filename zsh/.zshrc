@@ -95,15 +95,19 @@ zinit light djui/alias-tips
 
 zinit snippet OMZ::plugins/git/git.plugin.zsh
 
-zinit snippet PZT::modules/docker/init.zsh
-zinit snippet PZT::modules/docker/alias.zsh
+# zinit snippet PZT::modules/docker/init.zsh
+# zinit snippet PZT::modules/docker/alias.zsh
 
 # key binding
 bindkey ',' autosuggest-accept
 
 # github settings
-export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_rsa"
+export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519"
 
 # texlive settings
 export TEXMFDIST="/usr/share/texmf-dist"
 alias tlmgr='$TEXMFDIST/scripts/texlive/tlmgr.pl --usermode'
+
+
+# Added by Antigravity CLI installer
+export PATH="/Users/rabi/.local/bin:$PATH"

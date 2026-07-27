@@ -637,6 +637,7 @@ require('lazy').setup({
           { name = 'codeium' },
           { name = 'nvim_lsp' },
           { name = 'luasnip' },
+          { name = 'buffer' },
           { name = 'path' },
         },
         formatting = {
