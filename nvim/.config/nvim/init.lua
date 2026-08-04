@@ -175,6 +175,35 @@ vim.filetype.add {
   },
 }
 
+-- [[ Treesitter predicate compatibility shim ]]
+--    Neovim 0.12 removed the `all = false` option from
+--    `vim.treesitter.query.add_predicate`/`add_directive`, so every handler now
+--    receives `match` as `table<integer, TSNode[]>`. nvim-treesitter's `master`
+--    branch still registers handlers written against the old single-`TSNode`
+--    API, which blows up as
+--      treesitter.lua:197: attempt to call method 'range' (a nil value)
+--    Drop this once nvim-treesitter is migrated to the `main` branch.
+do
+  local tsq = require 'vim.treesitter.query'
+  for _, name in ipairs { 'add_predicate', 'add_directive' } do
+    local register = tsq[name]
+    tsq[name] = function(pred_name, handler, opts)
+      if type(opts) == 'table' and opts.all == false then
+        local legacy_handler = handler
+        handler = function(match, ...)
+          local single = {}
+          for id, nodes in pairs(match) do
+            -- legacy `all = false` semantics: last node of the capture list
+            single[id] = type(nodes) == 'table' and nodes[#nodes] or nodes
+          end
+          return legacy_handler(single, ...)
+        end
+      end
+      return register(pred_name, handler, opts)
+    end
+  end
+end
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
