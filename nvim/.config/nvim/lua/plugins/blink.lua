@@ -1,5 +1,6 @@
 return {
   'saghen/blink.cmp',
+  commit = 'cba53ef',
   dependencies = {
     'saghen/blink.lib',
     'rafamadriz/friendly-snippets',

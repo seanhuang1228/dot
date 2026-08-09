@@ -36,8 +36,18 @@ return {
     opts = {
       integrations = {
         telescope = true,
+        diffview = true,
       },
       kind = 'floating',
+      popup = {
+        kind = 'floating',
+      },
+      commit_view = {
+        kind = 'floating',
+      },
+      commit_editor = {
+        kind = 'floating',
+      },
       sections = {
         untracked = {
           folded = true,
