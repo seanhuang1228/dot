@@ -17,10 +17,6 @@ vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagn
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
 -- Markdown Preview
-vim.keymap.set('n', '<leader>mp', function()
-  local file = vim.fn.expand '%:p'
-  vim.fn.system(string.format("tmux split-window -h -l 50%% 'glow -t %s'", file))
-end, { desc = 'Toggle Terminal Markdown Preview' })
 
 -- LSP keymaps
 vim.api.nvim_create_autocmd('LspAttach', {
