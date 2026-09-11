@@ -6,7 +6,9 @@ description: Clean up what the issue workflow leaves behind in a repo — merged
 # Sweep
 
 Three passes, each with a hard line between **act** (provably done, remove it) and
-**list** (anything else, show it with what you'd need to know). Never cross the
+**list** (anything else, show it with what you'd need to know). Run pass 2's
+workspace closes before pass 1's worktree removals — a workspace's cwd is its
+worktree. Never cross the
 line because something "looks stale". Print one report at the end; nothing else.
 
 Run from the repo's main checkout (`git rev-parse --show-toplevel` is the repo,
@@ -41,11 +43,18 @@ workspace `herdr tab list --workspace <id>` and `herdr agent list`.
 - **act:** a tab labelled `NN-<slug>` (a phase tab) whose `phase/…` branch no
   longer exists → `herdr tab close <tab-id>`. The phase landed; the orchestra
   missed its cleanup.
-- **list:** an issue workspace (label `<id>-<slug>`) whose `feat/<id>-<slug>` branch
-  is merged: it's done, but it's the orchestra's — say "close it" and let the user.
+- **act:** an issue workspace (label `<id>-<slug>`) whose `feat/<id>-<slug>` branch
+  is merged into `origin/main` and whose `orch-<id>` is `idle` or gone → `herdr
+  workspace close <ws-id>`. Main opened it (`/start-issue`), so main closes it; the
+  orchestra can't close the room it's sitting in. Do this *before* pass 1 removes
+  the issue worktree — the workspace's cwd is that worktree. Order: close
+  workspace → remove worktree → delete branch.
+- **list:** an issue workspace whose branch is merged but whose orch is `working`
+  or `blocked` — something's still happening there; show it.
 - **list:** any pane in `blocked` state, with the agent name — someone is waiting on
   a permission prompt.
-- Never close a workspace, and never a tab you can't tie to a merged branch.
+- Never close a workspace you can't tie to a merged issue branch, and never a tab
+  you can't tie to a merged phase branch.
 
 ## 2b. Leftovers from merged issues
 

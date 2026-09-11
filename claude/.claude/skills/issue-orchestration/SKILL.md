@@ -1,6 +1,6 @@
 ---
 name: issue-orchestration
-description: Run one issue end to end as the orchestra session — research with fanned-out subagents, rewrite the living spec, write the issue design note, split into phases, dispatch phases to domain worker sessions, co-sign their plans, check every finished phase against the spec, run /code-review, open the MR. Two fixed human gates (design, merge) plus a conditional research gate that fires only when the orchestra has questions. Use when the user says "start issue N", "orchestrate #N", "open an issue for …", or hands you an issue to run.
+description: Run one issue end to end as the orchestra session — research with fanned-out subagents, rewrite the living spec, write the issue design note, split into phases, dispatch phases to domain worker sessions, co-sign their plans, check every finished phase against the spec, open the MR. Two fixed human gates (design, merge) plus a conditional research gate that fires only when the orchestra has questions. Use when the user says "start issue N", "orchestrate #N", "open an issue for …", or hands you an issue to run.
 ---
 
 # Issue orchestration
@@ -460,23 +460,13 @@ herdr agent read w-<id>-<NN>-<domain> --lines 40
 
 All phases passed:
 
-1. Run `/code-review high` on the branch. Every finding → ledger `F-xx` first, then
-   sort them into three bins and act — the user sees a fixed MR, not a report:
-   - **In this issue's diff, correctness** (AC missed, wrong logic, test cheating)
-     and **quality** (simplification, reuse, efficiency) → one **FX phase**: branch
-     `phase/<id>-fx-review`, a worker, dispatched like any phase (step 3) with the
-     `F-xx` list as its brief, tagged `correctness` / `quality` per item. Brief
-     rules, verbatim: *fix only the listed items; no spec change, no AC change, no
-     new abstraction; a quality item you believe changes behaviour is skipped with
-     one line of reason, not "improved"*. Step 4/5 apply as usual (co-sign the
-     plan, check the diff, ff-merge, close). Then `/code-review high` once more.
-   - **Outside this issue's diff** (pre-existing) → issue ledger only, status
-     `open`, title prefixed `pre-existing:`, with file:line. Not in this MR. They
-     reach the repo ledger through the `## Leftovers` section written at close,
-     which `/sweep` surfaces to main; a backlog is not an event.
-   - **Second review still reports a correctness item** → that's the user's: blocker
-     with both rounds' findings. Remaining quality items after the FX round stay
-     open `F-xx` in the ledger and are listed in the MR; no second FX phase.
+1. **No issue-level code review.** Every phase was already reviewed twice — the
+   worker's review subagent (phased-impl step 9) and your check subagent (step 5) —
+   and the whole-branch view is what the MR reviewer at G3 provides. Measured
+   2026-09-11: an end-of-issue `/code-review` fed FX loops of up to five rounds,
+   introduced design decisions after the design gate, and spent worker sessions on
+   comment-level nits. Findings for this issue are what the per-phase checks
+   minted in `ledger.md`; nothing new is generated here.
 2. Confirm every spec file in the Spec 改動 table has its `最近改動` line and matches
    what was built. Confirm the issue `ledger.md` has no `open` `Q-xx`. Add a final
    section `## Leftovers` to `ledger.md` listing every item still `open` that
@@ -487,13 +477,15 @@ All phases passed:
    --workspace $HERDR_WORKSPACE_ID` no phase tab left. Anything left means a phase
    landed without step 5's cleanup — close and remove it now, note it as `F-xx`.
 4. Push the issue branch and open the MR with `glab mr create`: title from the
-   issue, body = goal, AC table with pass/fail, Spec 改動 table, open `F-xx`/`R-xx`
-   ids, and the session attribution line the environment gives you. Never push
+   issue, body = goal, AC table with pass/fail, Spec 改動 table, the open `F-xx`/
+   `R-xx` from `ledger.md` with one line each, and the session attribution line the
+   environment gives you. Never push
    with `--force`.
 5. Tell the user: MR URL, open findings by id, anything deferred. Then stop. The
    session's job is over; a review-comment round is a new instruction from the
-   user. Leave the issue worktree in place — the next orchestra's intake sweeps it
-   once the MR is merged.
+   user. Leave the issue worktree and this workspace in place — `<repo>-main`'s
+   `/sweep` closes the workspace and removes the worktree once the MR is merged
+   and you're idle. You can't close the room you're sitting in.
 
 ## Rules
 

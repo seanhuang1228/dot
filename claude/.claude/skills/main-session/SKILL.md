@@ -56,7 +56,9 @@ orchestra). You never edit code yourself. Everything around the code is yours.
 - Push to `main` — with one exception: `docs/ledger/LEDGER.md` (and its detail
   files) is yours and only yours, and you commit it straight to `main`, one-line
   commits, nothing else in the commit. Everything else that lands on `main` goes
-  through an MR. Never force-push; never close panes or workspaces you did not open.
+  through an MR. Never force-push; never close panes or workspaces you did not
+  open. Issue workspaces you *did* open (via `/start-issue`), so `/sweep` closes
+  them once their MR is merged and their orchestra is idle.
 
 ## Context discipline
 
