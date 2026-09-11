@@ -70,12 +70,13 @@ under a minute.
    workspace create` and `herdr tab create --workspace <ws> --cwd <path> --label
    orch --no-focus`. Either way, confirm with `git worktree list` that the new path
    is under `$ROOT/.claude/worktrees/` before going on.
-4. **Ledger.** If the request was an `I-xx`, graduate it to `FT-xx` (item-ledger
-   rules); otherwise mint `FT-xx` directly. The line links to
+4. **Repo ledger.** If the request was an `I-xx`, graduate it to `FT-xx`
+   (item-ledger rules); otherwise mint `FT-xx` directly. The line links to
    `docs/design/<id>-<slug>/` (which doesn't exist yet — the orchestra creates it).
-   Commit it on the issue branch, inside the new worktree — `git -C <path> add
-   docs/ledger && git -C <path> commit -m "ledger: FT-xx for #<id>"` — never on
-   `main`.
+   Commit it on `main`, in the main checkout: `git add docs/ledger && git commit -m
+   "ledger: FT-xx for #<id>" && git push`. This is the one thing main commits to
+   `main` directly (docs/ledger only) — the issue branch must not carry repo-ledger
+   changes, or two issues merging collide on it.
 5. **Start the orchestra.**
    ```
    herdr agent start orch-<id> --kind claude --pane <root_pane> -- -n orch-<id> --model <fable|opus>
@@ -95,15 +96,25 @@ under a minute.
    GitLab: <issue url>
    Request, in the user's words: "<verbatim>"
    Issue body / comments: <verbatim, or summary + "read the full issue with glab issue view <id> --comments">
+   Epic: none | docs/design/<epic-id>-<slug>/plan.md, entries PH-01..PH-03 are yours — skip planning, run them
    Ledger: FT-xx
    Related spec files: docs/spec/<a>.md, docs/spec/<b>.md   (your best guess; say "none known" if none)
    Related open ledger items: <ids or none>
    Context the user gave: <Lark links / MR ids / anything pasted, or none>
-   Gates G1/G2/G3 go to the user, not to me. Blockers go to the user. I'm <repo>-main if you need a cross-issue fact.
+   Gates G1/G2/G3 and blockers go to the user, not to me. Do not message me at all — cross-issue facts are in docs/design/*/design.md and git worktree list; leftovers go in your ledger.md.
    ```
 7. **Report to the user**, four lines: workspace label, orchestra name and model
    (with the one-line why), "next thing you'll see is G2 (design.md) — or G1 if
    research raises questions". Then you're done with this issue.
+
+## Epics
+
+`/start-issue … --epic <epic-id> PH-xx..PH-yy` starts a child of an epic that an
+orchestra already planned. Same steps; the GitLab issue is created as a child of
+the epic's issue (`glab issue create … --linked-issues <epic-id>` or the repo's
+convention), the slug is `<epic-slug>-<xx>-<yy>`, and the brief's `Epic:` line
+points at the plan and the entries. One child at a time unless the epic plan marks
+the groups `Parallel-ok`.
 
 ## Not this skill's job
 

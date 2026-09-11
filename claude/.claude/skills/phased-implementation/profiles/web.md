@@ -12,12 +12,14 @@ ask about.
 
 Run every command below from the package root, not the repo root.
 
-**Ports come from the environment.** When dispatched, `PORT` (dev server),
-`API_PORT`, `WORKTREE_ID`, and `COMPOSE_PROJECT_NAME` are set for this worktree so
+**Ports come from the environment.** The repo's `CLAUDE.md` has a `## Worktree
+ports` line naming the port variables its configs read; when dispatched, every one
+of them plus `WORKTREE_ID` and `COMPOSE_PROJECT_NAME` is set for this worktree so
 parallel phases don't collide. Never pass a literal port to a dev server or a
-browser runner, and never "fix" a port clash by picking another number — if a
-config ignores `PORT` (Vite without `strictPort`, a Playwright `baseURL` with a
-hardcoded port), report it as a finding; it's a repo bug.
+browser runner, and never "fix" a port clash by picking another number — a config
+that ignores its declared variable (Vite without `strictPort`, a Playwright
+`baseURL` with a hardcoded port), or a server with no declared variable at all, is
+a finding against the repo, not something to work around.
 
 **Before step 1, read the package's own conventions** — a `CLAUDE.md`, `README.md`,
 or `CONTRIBUTING.md` at the package root. This profile is the stack-generic layer;

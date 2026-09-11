@@ -64,6 +64,12 @@ opts) when launching each subagent — don't leave them defaulted.
    in English (plan file excepted: docs follow the repo's language). Standalone,
    the user's CLAUDE.md rule applies (replies in Chinese).
 
+   Questions: dispatched, they go to the approver, never to the user — one
+   `SendMessage` with the question, the options you see, and your recommended
+   one; then end the turn and wait. Ask when the spec and the plan genuinely don't
+   settle it; don't ask to be reassured. The approver may answer, or turn it into
+   a blocker for the user itself.
+
 1. **Read the requirement.** Pull the specific target for this unit of work — not the
    whole spec/PRD, just the scoped piece being implemented now (e.g. one phase entry
    from an implementation plan, one ticket). If a pass-criteria list exists, it's the
@@ -74,9 +80,14 @@ opts) when launching each subagent — don't leave them defaulted.
    (Explore / general-purpose) if the codebase is large enough that this would burn
    significant context inline.
 
-3. **Write the plan file.** Do not enter plan mode — the plan is a file that gets
-   submitted, so it can be reviewed by another session and lands in git with the
-   checkpoint. Path:
+3. **Write the plan file.** Do not enter plan mode — the plan is a file, so it can
+   be read by another session and lands in git with the checkpoint. Dispatched with
+   a **complete entry** (the dispatch names `design.md § PH-NN` and `Co-sign: no`):
+   the entry *is* the plan — scope, parameters, skeleton contract, AC are already
+   decided. Your plan file is then short: a link to the entry, the file-by-file
+   change list, the test list, and any assumption the entry left open. Don't
+   restate the entry and don't re-decide it; if you believe it's wrong, that's a
+   question to the approver (step 0), not a different plan. Path:
    - dispatched under an issue (the dispatch message names the issue directory):
      `docs/design/<issue>/phases/NN-<slug>.md`, `NN` from the phase list in that
      issue's `design.md`
@@ -97,8 +108,11 @@ opts) when launching each subagent — don't leave them defaulted.
    The plan follows the repo's language for docs. Write it as the plan, not as a
    proposal — no "we could" alternatives; open questions go in their own section.
 
-4. **Submit and wait for approval.** Never proceed past this point on your own.
-   - **Dispatched:** `SendMessage` the approver named in the dispatch: the plan file
+4. **Submit and wait for approval — unless the dispatch said `Co-sign: no`.**
+   - **Dispatched, `Co-sign: no`:** set `status: per entry PH-NN, <date>` in the plan
+     header and go straight to step 5. The approver checks the result against the
+     entry when you're done; there is nothing to approve before that.
+   - **Dispatched, `Co-sign: yes`** (a thin entry): `SendMessage` the approver named in the dispatch: the plan file
      path, a 3–5 line summary, and the open questions. Then **end the turn** — the
      reply arrives as a new turn. `approve` → set `status: approved by <approver>
      <date>` in the plan header and continue to step 5. A revision request → update

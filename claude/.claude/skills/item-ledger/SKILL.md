@@ -82,17 +82,36 @@ These make an ID safe to say in chat weeks later:
    not a free slot.
 4. Cross-reference between items inline by ID: `blocks T-03`, `answers Q-01`.
 
-## Ledger directory
+## Two ledgers, one writer each
 
-One directory per project: `docs/ledger/` (if the project defines a different
-location in its CLAUDE.md, that wins). Create it on first use.
+Parallel branches minting into one file collide on the counter and conflict on
+every rebase, so a repo has two levels and each file has exactly one writer:
+
+| ledger | path | writer | holds |
+| --- | --- | --- | --- |
+| repo | `docs/ledger/LEDGER.md` | the repo's main session, committing directly to `main` | `I`, `FT`, risks that outlive an issue, `pre-existing:` findings |
+| issue | `docs/design/<id>-<slug>/ledger.md` | that issue's orchestra, on the issue branch | that issue's `F`, `T`, `Q`, `D`, `R` |
+
+Resolution: inside an issue directory (or a session whose brief names one), the
+issue ledger is *the* ledger — IDs are unqualified (`F-03`). From anywhere else, an
+issue item is written `42/F-03`. Repo-level items are never qualified. Workers,
+sub-issue sessions, and subagents don't write either file: they report, the owner
+mints. (A project CLAUDE.md may name different paths; the one-writer rule stays.)
+
+Layout of either:
 
 ```
-docs/ledger/
-  LEDGER.md      # the index — always exists, one line per item
+<ledger dir>/
+  LEDGER.md      # repo level — the index, one line per item
+  ledger.md      # issue level — same format, lower-case to tell them apart at a glance
   F-07.md        # detail file — only for items too complex for one line
   Q-02.md
 ```
+
+When an issue closes, its `ledger.md` freezes with the directory. Items still
+`open` that matter beyond the issue are re-minted at repo level by the main session
+(new id, line cites `42/R-01`), and the issue line is closed `dropped — moved to
+R-07`.
 
 - The **index** is the single source of truth for existence, status, and counters.
 - A **detail file** is optional, named exactly `<ID>.md`, created only when an

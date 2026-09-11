@@ -35,9 +35,17 @@ improvise a substitute.
 The repo's main session (`<repo>-main`, see the `main-session` skill) creates the
 issue workspace, starts you, and briefs you via `/start-issue`. Its brief names the
 issue, the ledger `FT-xx`, and any context the user gave; read it as your intake
-input. `<repo>-main` is who to ask for cross-issue facts ("is anyone else touching
-this module"); the user is who to ask for decisions. The main-checkout workspace is
-not yours.
+input — and that is the last message between you and main. **You never message
+`<repo>-main`.** It's the session the user is talking to; a message from you
+becomes a turn it runs on someone else's behalf mid-conversation. Cross-issue facts
+("is anyone else touching this module") you read yourself: `docs/design/*/design.md`
+touched-modules tables, `git worktree list`, `git branch -a`. Decisions you can't
+make are the user's, via a blocker. What you leave behind at close is written into
+your `ledger.md`, and main picks it up on its own schedule.
+
+Messages you do receive: workers'. A worker may ask you a question mid-phase
+(one message, options included) and you answer it — you hold the design, and your
+tab is not the user's. That's the only upward channel in the tree.
 
 Messages to a worker arrive as a new turn when it's idle, between tool calls when it's
 busy. Every message you send must therefore be self-contained: issue path, phase
@@ -67,9 +75,10 @@ session as blocked from the ended turn.
 
 ```
 docs/
-├── ledger/LEDGER.md                 # item-ledger skill; findings, questions, decisions, risks
+├── ledger/LEDGER.md                 # repo-level ledger — main's; you never write it
 ├── spec/<module>.md                 # living spec, present tense, rewritten in place
 └── design/<issue-id>-<slug>/        # this issue's delta; read-only once the issue closes
+    ├── ledger.md                    # this issue's ledger — yours, the only writer
     ├── research.md                  # G1 only if it raised questions; else read at G2
     ├── design.md                    # G2
     └── phases/NN-<slug>.md          # worker plans, one per phase
@@ -86,6 +95,11 @@ Rules that make this layout work:
   phase list. It never restates what the spec says.
 - Rationale is not spec. A choice made along the way is a `D-xx` ledger item; the
   spec carries the conclusion and the ledger id.
+- **You are the only writer of this issue's `ledger.md`.** Workers report findings
+  in their messages; you mint. Never touch `docs/ledger/LEDGER.md` — that's
+  `<repo>-main`'s, and two branches writing it is exactly the collision the split
+  exists to avoid. Commit ledger updates on the issue branch as you go; a phase
+  branch that then can't fast-forward rebases at land time (step 5), docs-only.
 - `research.md` and `phases/` are frozen after their gate. Never edit them to match
   what was built — that goes in the spec (present) and the ledger (why).
 - Docs follow the repo's language. The example tree under
@@ -129,9 +143,14 @@ main
   from a fresh `main` and tell the user you moved there.
 - `herdr workspace list` → note your workspace id (`$HERDR_WORKSPACE_ID`); workers
   go in it.
-- Create `docs/design/<id>-<slug>/`. Create `docs/ledger/LEDGER.md` if missing.
+- Create `docs/design/<id>-<slug>/` with an empty `ledger.md` (item-ledger format,
+  `next:` all at 01). `docs/ledger/LEDGER.md` is not yours to create or edit.
 - Read the existing `docs/spec/` files for the modules the issue touches — that's
   what you're changing, so know it before research.
+- **Epic child?** If the brief names an epic plan and your entries (`PH-xx..PH-yy`),
+  skip research and planning: your `design.md` is the epic's header plus your
+  entries copied verbatim (they were approved with the epic), and you go straight
+  to the G2 summary so the user sees which slice is starting. Then step 3 onward.
 
 ### 1. Research → G1
 
@@ -188,16 +207,53 @@ After research (and after G1, if it fired):
    describe the system as it will be after this issue. New module → new file. Every
    spec file you touch gets its `最近改動: #<id>` header line updated. Decisions with a
    "why" become `D-xx` ledger items; the spec cites the id.
-2. **Write `design.md`.** Unverified premises first (with how the design absorbs
-   each), goal, non-goals, Spec 改動 table, AC table (id, condition, verification
-   method — a method you can actually run at phase check: integration test, e2e,
-   unit, manual command), touched modules and explicit not-touched modules, phase
-   list (number, domain, content, dependencies, which run in parallel).
-3. Phases are sized for one `/phased-implementation` run each: one domain, one
-   commit-able unit, its AC ids named. A phase that "needs a bit of both sides" is
-   mis-split. The frontend phase that depends on a contract can start as soon as the
-   contract is in `docs/spec/` — it mocks against it.
-4. **Present G2 as a summary, not as homework.** The user approves from what you
+2. **Write the top of `design.md`.** Unverified premises first (with how the
+   design absorbs each), goal, non-goals, Spec 改動 table, AC table (id, condition,
+   verification method — a method you can actually run at phase check: integration
+   test, e2e, unit, manual command), touched modules and explicit not-touched
+   modules, and a one-line phase index.
+3. **Have a planner write the phase entries.** Launch one subagent
+   (general-purpose, `model: "fable"`, high effort) with the spec files, `design.md`
+   so far, `research.md`, and read access to the code. It writes the `## Phases`
+   section: one **complete entry per phase**, in the shape below, so that a worker
+   can start from the entry alone and you can check the result against it alone.
+   This is the planning cost of the issue, paid once, by one author — phases
+   planned one at a time by different sessions drift from each other.
+
+   ```
+   ### PH-NN — <one line>
+   Domain: be | fe            Depends on: PH-xx     Parallel-ok: no | yes (<why: disjoint packages>)
+   Settles: D-xx …            Covers: AC-x, AC-y
+   Goal: <one paragraph — the state of the system when this phase is done>
+   In scope: <bullets, file/module level>
+   Out of scope: <bullets, with the phase that owns each>
+   Binding constraints: <spec sections / D-xx this phase must not violate>
+   Parameters: | parameter | value | hardcoded / configurable | source |
+   Skeleton contract: <files, signatures, fixtures, the tests that must be red on the stub>
+   Acceptance: - AC-x: <condition> (<verification: unit | integration | e2e | manual cmd>)
+   Doc sync: <spec sections to rewrite when this lands>
+   ```
+
+   An entry the planner cannot fill completely (a decision not yet made, an
+   unknown it can't resolve) is marked `Thin: <what's missing>` at the top and gets
+   a `D-xx pending` in the ledger. Thin entries are the only ones that get a plan
+   co-sign later (step 4).
+
+   Sizing rules the planner follows, and you enforce:
+   - one phase = one `/phased-implementation` run: one domain, one commit-able
+     unit. "A bit of both sides" is two phases.
+   - **six phases is the cap.** More → this is an epic. Stop: rewrite the phase
+     section as an epic plan grouping entries into child issues of ≤ 6 phases each,
+     present that at G2, and end. On approval, move the plan to
+     `docs/design/<id>-<slug>/plan.md`, commit, report "epic — start child issues
+     from <repo>-main with `/start-issue … --epic <id> PH-01..PH-03`", and stop —
+     you don't run an epic. Child orchestras read their entries from the epic plan
+     instead of running step 3.
+   - `Parallel-ok: yes` only when two phases touch disjoint packages and share no
+     file. Everything else is sequential. Parallelism is not free — it's what the
+     port isolation, rebase, and ledger rules exist to pay for.
+4. **Present G2 as a summary, not as homework.** (Entries are what the user reads
+   when they want detail; the summary's phase line names them.) The user approves from what you
    write in chat; the files are for when they want more. In Chinese, in this shape,
    no longer than fits on one screen:
 
@@ -235,16 +291,16 @@ any dispatch, so workers see the approved state in git.
 
 ### 3. Dispatch a phase
 
-For each phase whose dependencies are done (independent phases go out together),
-start a worker and then brief it:
+Phases go out **one at a time, in order**. The next one starts when the previous
+has landed (step 5). The only exception is a pair marked `Parallel-ok: yes` in
+their entries — those may run together. Start a worker and brief it:
 
 ```
 BR=phase/<id>-<NN>-<slug>
 git worktree add -b $BR .claude/worktrees/phase-<id>-<NN>-<slug> feat/<id>-<slug>
-PORT=$(python3 -c 'import zlib,sys;print(20000+zlib.crc32(sys.argv[1].encode())%10000)' $BR)
+ENV=$(worktree-env $BR)          # see "Ports and shared resources" below
 herdr tab create --workspace $HERDR_WORKSPACE_ID --cwd <that path> --label <NN>-<slug> --no-focus \
-  --env PORT=$PORT --env API_PORT=$((PORT+1)) --env WORKTREE_ID=$BR \
-  --env COMPOSE_PROJECT_NAME=$(echo $BR | tr '/' '-')
+  --env WORKTREE_ID=$BR --env COMPOSE_PROJECT_NAME=$(echo $BR | tr '/' '-') $ENV
     → .result.root_pane
 herdr agent start w-<id>-<NN>-<domain> --kind claude --pane <root_pane> -- -n w-<id>-<NN>-<domain> --model opus
 ```
@@ -259,15 +315,40 @@ more judgment than that — research changed the scope, a contract has to be sha
 `agent start` waits for readiness; if it fails, close the tab, remove the worktree
 and branch, and raise a blocker — don't retry blind.
 
-**Ports and shared resources.** Parallel phases each run their own dev server,
-backend, browser tests, and possibly containers; without isolation they collide.
-The `--env` block gives every worktree a deterministic set derived from its
-branch, inherited by the worker and everything it starts. The repo's configs read
-them (`vite` `server.port` + `strictPort`, Playwright `baseURL`/`webServer.port`,
-the backend's listen port, compose project name / DB name from `WORKTREE_ID`);
-if a config hardcodes a port, that's a `F-xx` against the repo, not something to
-work around per phase. When *you* run a verification in a phase worktree (step
-5), export the same variables first — compute them from the branch the same way.
+**Ports and shared resources.** Parallel phases (and your own verification runs)
+each start dev servers, backends, browser runners, maybe containers; without
+isolation they collide. How many ports a project needs is the project's business,
+so **the repo declares its port variables and you assign the numbers**:
+
+- The declaration is a section in the repo's `CLAUDE.md`:
+  ```
+  ## Worktree ports
+  WEB_PORT API_PORT GRPC_PORT PG_PORT
+  ```
+  one line, the env var names the project's configs read, in any order. Read it
+  at intake. No section → you inject only `WORKTREE_ID` and
+  `COMPOSE_PROJECT_NAME`, and say so in the dispatch ("repo declares no ports; a
+  server you need to start is an `F-xx` against the repo, not a number you pick").
+- Assignment is a block per worktree, derived from the branch so it's the same
+  every time anyone computes it:
+  ```
+  worktree-env() {  # $1 = branch; prints --env args
+    local names=($(sed -n '/^## Worktree ports/{n;p;}' "$(git rev-parse --show-toplevel)/CLAUDE.md"))
+    local n=${#names[@]}; [ $n -eq 0 ] && return
+    local stride=$(( (n + 9) / 10 * 10 ))                       # 10, 20, …
+    local base=$(( 20000 + $(python3 -c "import zlib,sys;print(zlib.crc32(sys.argv[1].encode())%(10000//$stride))" "$1") * stride ))
+    local i=0; for v in "${names[@]}"; do printf -- '--env %s=%s ' "$v" $((base+i)); i=$((i+1)); done
+  }
+  ```
+  Ports land in 20000–29999, one contiguous block per worktree, variable *i* gets
+  `base+i`. Everything the worker starts inherits them (verified 2026-09-11).
+- The repo's configs read those variables and nothing else: `vite`
+  `server.port` + `strictPort`, Playwright `baseURL`/`webServer.port`, the
+  backend's listen ports, DB names and compose project from `WORKTREE_ID` /
+  `COMPOSE_PROJECT_NAME`. A config that hardcodes a port is an `F-xx` against the
+  repo, not something to route around per phase.
+- When *you* (or your check subagent) run anything in a phase worktree, export
+  the same block first — `eval export $(worktree-env $BR | sed 's/--env //g')`.
 Then:
 
 ```
@@ -276,8 +357,10 @@ SendMessage to w-<id>-<NN>-<domain>:
 Phase <NN> of issue <id>-<slug>. Run /phased-implementation.
 Issue dir: docs/design/<id>-<slug>/  (read design.md; your phase is #<NN>)
 Spec: docs/spec/<a>.md, docs/spec/<b>.md  (base for everything; deviations are blockers)
+Entry: design.md § PH-<NN>  (complete | thin — <what's missing>)
+Co-sign: no | yes   (yes only for a thin entry)
 AC covered: AC-x, AC-y
-Approver: orch-<id>  — submit your plan file to me and wait; report completion to me.
+Approver: orch-<id>  — questions and completion report come to me.
 Base branch: feat/<id>-<slug>  at <sha>
 Your branch: phase/<id>-<NN>-<phase-slug>   (you are already in its worktree; verify with git branch --show-current)
 ```
@@ -286,10 +369,13 @@ Record `<sha>` — it's what you diff against at phase check. Two parallel phase
 two branches from the same `<sha>`; whichever lands second will need a rebase
 (step 5).
 
-### 4. Co-sign the plan
+### 4. Co-sign the plan — thin entries only
 
-The worker's submission arrives as a message naming the plan file. Read the plan
-against `design.md` and the spec and answer **only** these:
+A worker with a complete entry doesn't submit a plan; it writes its plan file
+(entry + file list + test list) and starts, and you hear from it next at
+completion. Only a `Thin` entry's worker submits, because there the plan
+contains a decision the entry didn't. Its submission arrives as a message naming
+the plan file. Read it against `design.md` and the spec and answer **only** these:
 
 - covers the AC ids assigned, no more
 - touches only modules in the touched list; new files sit where the spec says
@@ -304,16 +390,24 @@ yourself — the worker owns it.
 
 ### 5. Check a finished phase
 
-The worker's completion message names commits and deviations. You read the diff
-yourself — you have the issue context, and you live one issue, so the context cost
-is acceptable. Scope it: `git diff <base-sha>..phase/<id>-<NN>-<slug> -- <touched
-paths>` from your own worktree — no checkout needed — plus the worker's test files.
-To run a verification command, `cd` into the worker's worktree path, export the
-same `PORT`/`API_PORT`/`WORKTREE_ID`/`COMPOSE_PROJECT_NAME` the tab was created
-with (recompute from the branch), and run it there; never edit or commit in that
-tree.
+The worker's completion message names commits and deviations. **You do not read the
+diff yourself.** Measured 2026-09-11: orchestras that did sat at 250–290K tokens of
+context per turn for a whole issue, and every cache miss re-wrote all of it. Your
+context holds the design and the decisions; the diff goes to a subagent.
 
-Check, in this order:
+Launch one **check subagent** (general-purpose, `model: "opus"`, high effort) per
+finished phase. Give it, verbatim: the phase's AC rows from `design.md` (id,
+condition, verification method), the spec files the phase touches, the touched
+modules list and the not-touched list, the worker's reported deviations, the
+diff command `git diff <base-sha>..phase/<id>-<NN>-<slug> -- <touched paths>`, the
+worker's worktree path, and the env block (the repo's declared port variables plus
+`WORKTREE_ID`/`COMPOSE_PROJECT_NAME`, recomputed from the branch with
+`worktree-env`) to export before running any verification there. Tell it it may run commands in that worktree and must never
+edit or commit in it. It returns a fixed-shape report: per AC `pass|fail` with the
+evidence line; a numbered list of structure findings; a verdict on each reported
+deviation. Nothing else — you don't want the diff back.
+
+The subagent checks, in this order:
 
 1. **AC** — for each AC id of this phase, run its verification method from
    `design.md`. "Tests pass" is not an AC check unless the AC says unit test. If the
@@ -324,7 +418,9 @@ Check, in this order:
 3. **Deviations the worker reported** — each one is either fine (update the spec
    now, ledger `D-xx`) or a finding.
 
-Every problem is a ledger `F-xx`. Then:
+You read the report, not the diff. Every problem becomes a ledger `F-xx` (you
+mint; the subagent doesn't). If the report is ambiguous on one item, ask the same
+subagent a follow-up rather than opening the diff yourself. Then:
 
 - **pass** → land it and clean up, in one step:
   1. `git merge --ff-only phase/<id>-<NN>-<slug>` on the issue branch. If it can't
@@ -374,15 +470,19 @@ All phases passed:
      new abstraction; a quality item you believe changes behaviour is skipped with
      one line of reason, not "improved"*. Step 4/5 apply as usual (co-sign the
      plan, check the diff, ff-merge, close). Then `/code-review high` once more.
-   - **Outside this issue's diff** (pre-existing) → ledger only, status `open`,
-     title prefixed `pre-existing:`, with file:line. Not in this MR, not sent to
-     anyone. The user picks from the ledger when they want; a backlog is not an
-     event.
+   - **Outside this issue's diff** (pre-existing) → issue ledger only, status
+     `open`, title prefixed `pre-existing:`, with file:line. Not in this MR. They
+     reach the repo ledger through the `## Leftovers` section written at close,
+     which `/sweep` surfaces to main; a backlog is not an event.
    - **Second review still reports a correctness item** → that's the user's: blocker
      with both rounds' findings. Remaining quality items after the FX round stay
      open `F-xx` in the ledger and are listed in the MR; no second FX phase.
 2. Confirm every spec file in the Spec 改動 table has its `最近改動` line and matches
-   what was built. Confirm `LEDGER.md` has no `open` `Q-xx` for this issue.
+   what was built. Confirm the issue `ledger.md` has no `open` `Q-xx`. Add a final
+   section `## Leftovers` to `ledger.md` listing every item still `open` that
+   outlives the issue (`R-xx`, `pre-existing:` findings), one line each. Nobody is
+   messaged; `/sweep` reads this section from merged issues and main re-mints what
+   it keeps.
 3. `git worktree list` must show no `phase/<id>-…` worktree and `herdr tab list
    --workspace $HERDR_WORKSPACE_ID` no phase tab left. Anything left means a phase
    landed without step 5's cleanup — close and remove it now, note it as `F-xx`.

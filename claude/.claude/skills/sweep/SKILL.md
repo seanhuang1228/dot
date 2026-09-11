@@ -47,6 +47,15 @@ workspace `herdr tab list --workspace <id>` and `herdr agent list`.
   a permission prompt.
 - Never close a workspace, and never a tab you can't tie to a merged branch.
 
+## 2b. Leftovers from merged issues
+
+For every `docs/design/<id>-<slug>/` whose `feat/<id>-<slug>` branch is merged and
+whose `ledger.md` has a `## Leftovers` section with items not yet marked `dropped —
+moved to …`:
+
+- **list:** each item as `<id>/R-01 — <title>`, so main (or the user) can say
+  "re-mint" or "drop". Sweep never writes ledgers.
+
 ## 3. Sessions
 
 ```
