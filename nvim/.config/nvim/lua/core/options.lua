@@ -29,6 +29,18 @@ vim.opt.showmode = false
 -- See `:help 'clipboard'`
 vim.opt.clipboard = 'unnamedplus'
 
+-- Over SSH there is no local clipboard tool worth using: xclip would write to
+-- the remote machine's display, not the one we're sitting at. Route yanks
+-- through OSC 52 so they land in the terminal's clipboard instead.
+if vim.env.SSH_TTY then
+  local osc52 = require 'vim.ui.clipboard.osc52'
+  vim.g.clipboard = {
+    name = 'OSC 52',
+    copy = { ['+'] = osc52.copy '+', ['*'] = osc52.copy '*' },
+    paste = { ['+'] = osc52.paste '+', ['*'] = osc52.paste '*' },
+  }
+end
+
 -- Enable break indent
 vim.opt.breakindent = true
 
