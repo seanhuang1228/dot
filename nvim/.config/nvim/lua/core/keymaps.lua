@@ -24,12 +24,18 @@ vim.api.nvim_create_autocmd('LspAttach', {
     local telescope_builtin = require 'telescope.builtin'
     local buf = event.buf
 
+    local toggle_inlay_hint = function()
+      vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled(), { 0 })
+    end
+
     vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, { buffer = buf, desc = '[R]e[n]ame symbol' })
     vim.keymap.set('n', 'gd', telescope_builtin.lsp_definitions, { buffer = buf, desc = '[G]oto [D]efinition' })
     vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, { buffer = buf, desc = '[G]oto [D]eclaration' })
     vim.keymap.set('n', 'gr', telescope_builtin.lsp_references, { buffer = buf, desc = '[G]oto [R]eferences' })
     vim.keymap.set('n', 'gI', telescope_builtin.lsp_implementations, { buffer = buf, desc = '[G]oto [I]mplementation' })
+    vim.keymap.set('n', 'mh', toggle_inlay_hint, { buffer = buf })
     vim.keymap.set('n', '<leader>D', telescope_builtin.lsp_type_definitions, { buffer = buf, desc = 'Type [D]efinition' })
     vim.keymap.set('n', 'K', vim.lsp.buf.hover, { buffer = buf, desc = 'Hover Documentation' })
+    vim.keymap.set('n', 'ca', vim.lsp.buf.code_action, { buffer = buf })
   end,
 })
