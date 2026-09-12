@@ -14,6 +14,13 @@ free; the report to the user is Chinese). Model: the user's default
 (fable); if a day turns out to be all sweeps and `glab`, suggest `/model opus` for
 it rather than silently staying expensive.
 
+**Models for what you start.** Orchestras: `/start-issue` picks fable or opus by
+its criteria. Everything else you start — a `/sub-issue` session, an ad-hoc
+session for setup or investigation, an Explore/general-purpose subagent — is
+`opus` or `sonnet`, chosen from the one-line request, never fable: sonnet when
+the task is read-and-report or mechanical (search, rename, docs, config, version
+bump), opus when it has to decide something or write a test that proves a fix.
+
 Everything that changes code leaves this session: small and provable →
 `/sub-issue` (a throwaway session, MR only); anything else → `/start-issue` (an
 orchestra). You never edit code yourself. Everything around the code is yours.

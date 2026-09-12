@@ -56,14 +56,27 @@ workspace `herdr tab list --workspace <id>` and `herdr agent list`.
 - Never close a workspace you can't tie to a merged issue branch, and never a tab
   you can't tie to a merged phase branch.
 
-## 2b. Leftovers from merged issues
+## 2b. Leftovers — only from what this run swept
 
-For every `docs/design/<id>-<slug>/` whose `feat/<id>-<slug>` branch is merged and
-whose `ledger.md` has a `## Leftovers` section with items not yet marked `dropped —
-moved to …`:
+Scope: the issues **this run** just cleaned up — the workspaces closed in pass 2
+and the `feat/` worktrees removed in pass 1, nothing else. An issue whose cleanup
+happened in an earlier run is done with; its `ledger.md` keeps its leftovers and
+nobody re-reads them. Listing every merged issue's leftovers on every sweep turns
+the report into a backlog that gets skimmed and then ignored — the whole point is
+that a leftover surfaces once, at the moment its issue is put away.
 
-- **list:** each item as `<id>/R-01 — <title>`, so main (or the user) can say
-  "re-mint" or "drop". Sweep never writes ledgers.
+For each of those issues, read `docs/design/<id>-<slug>/ledger.md` on `main` (it
+survives the worktree removal) and take its `## Leftovers` items that aren't
+already marked `dropped — moved to …`:
+
+- **list:** each item as an `L-n` row carrying its source id, `L-1 59/R-01 —
+  <title>`. Sweep never writes ledgers; the re-mint is main's, per `main-session`
+  step 5: a new repo-level id on the `chore/ledger` branch citing `59/R-01`, and
+  the issue line closed `dropped — moved to R-07`. End the report by naming that
+  as the next action when any `L-` row exists — this is the only place a merged
+  issue's leftovers ever surface, so a sweep that lists them and says nothing
+  loses them. No issue cleaned up this run → no `Leftovers` section in the
+  report, not an empty one.
 
 ## 3. Sessions
 
@@ -82,12 +95,18 @@ claude agents --json --all
 
 ```
 Swept:
+- closed workspace 59-venue-follows-pair (MR merged, orch idle)
 - removed worktree <path> (branch <b>, merged)
 - closed tab <label> in <workspace>
+Leftovers to re-mint (mine):
+- L-1 59/R-01 — playwright reuseExistingServer picks up another worktree's dev server
+- L-2 60/F-08 — pre-existing: deviation copy duplicated in two components
 Left for you:
 - W-1 <path> — <branch>, 3 ahead, dirty, cwd of market-worker
 - S-1 pid 50930 data-market-main — bg, idle 7d, /Users/…/feat-data-market
 ```
 
-Numbered so the user can answer "W-1 remove, S-1 kill". Nothing swept and nothing
-left → say exactly that in one line.
+Numbered so the user can answer "W-1 remove, S-1 kill, L-2 drop". `L-` rows are
+yours to act on unless the user says drop: re-mint them on `chore/ledger` in the
+same turn, then say which ids they became. Nothing swept and nothing left → say
+exactly that in one line.

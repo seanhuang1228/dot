@@ -49,9 +49,12 @@ main session offers `/start-issue`. Never grind.
    ROOT=$(git rev-parse --show-toplevel)
    git worktree add -b fix/<slug> "$ROOT/.claude/worktrees/fix-<slug>" main
    herdr tab create --workspace $HERDR_WORKSPACE_ID --cwd "$ROOT/.claude/worktrees/fix-<slug>" --label sub-<slug> --no-focus
-   herdr agent start sub-<slug> --kind claude --pane <root_pane> -- -n sub-<slug> --model opus
+   herdr agent start sub-<slug> --kind claude --pane <root_pane> -- -n sub-<slug> --model <opus|sonnet>
    ```
    `fix/` for bug fixes, `chore/` for the rest (branch-naming rule). Slug ≤ 4 words.
+   **Model from the request, opus or sonnet, never fable:** `sonnet` for chores —
+   rename, message text, lint, version bump, docs, a config value; `opus` for a
+   fix that needs a red test and a reason. If the user named one, that wins.
 4. Brief, one `SendMessage`:
    ```
    Sub-issue <slug> — load /sub-issue and do the sub-session half.

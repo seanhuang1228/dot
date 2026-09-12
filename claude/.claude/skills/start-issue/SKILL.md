@@ -91,8 +91,10 @@ under a minute.
    ```
    **You pick the orchestra's model.** `fable` (`claude-fable-5-1`) when the issue
    has judgment in it — any of: cross-domain (fe + be), a new module or a contract
-   to shape, research needed, the request is ambiguous, or it touches a module whose
-   spec doesn't exist yet. `opus` when it's execution against an existing pattern:
+   to shape, the request is ambiguous, or it touches a module whose spec doesn't
+   exist yet. Needing research is *not* a reason — research runs on sonnet
+   subagents whatever the orchestra is. `opus` when it's execution against an
+   existing pattern:
    single domain, spec already describes the module, the phases are obvious from
    the request ("add exchange #4 like the other three"). If the user named a model,
    that wins. Say which you chose and why in one line of the report. This blocks
