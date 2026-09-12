@@ -12,10 +12,10 @@ ask about.
 
 Run every command below from the package root, not the repo root.
 
-**Ports come from the environment.** The repo's `CLAUDE.md` has a `## Worktree
-ports` line naming the port variables its configs read; when dispatched, every one
-of them plus `WORKTREE_ID` and `COMPOSE_PROJECT_NAME` is set for this worktree so
-parallel phases don't collide. Never pass a literal port to a dev server or a
+**Ports come from the environment.** The repo documents its port variables in its
+own docs (a dev-ports / dev-environment doc, `.env.example`); when dispatched,
+every one of them plus `WORKTREE_ID` and `COMPOSE_PROJECT_NAME` is set for this
+worktree so parallel phases don't collide. Never pass a literal port to a dev server or a
 browser runner, and never "fix" a port clash by picking another number — a config
 that ignores its declared variable (Vite without `strictPort`, a Playwright
 `baseURL` with a hardcoded port), or a server with no declared variable at all, is

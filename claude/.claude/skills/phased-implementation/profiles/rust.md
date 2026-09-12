@@ -4,9 +4,9 @@
 
 `Cargo.toml` at the repo root (workspace) or at the touched package's root.
 
-**Ports come from the environment.** The repo's `CLAUDE.md` `## Worktree ports`
-line names the port variables (gRPC / HTTP listen ports, local DB port, …); when
-dispatched they are set per worktree, along with `WORKTREE_ID` and
+**Ports come from the environment.** The repo documents its port variables in its
+own docs (gRPC / HTTP listen ports, local DB port, …); when dispatched they are set
+per worktree, along with `WORKTREE_ID` and
 `COMPOSE_PROJECT_NAME`. Binaries and integration tests bind to those, never to a
 literal. A hardcoded listen port, or a service with no declared variable, is a
 finding against the repo.

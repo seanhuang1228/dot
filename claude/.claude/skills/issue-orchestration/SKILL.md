@@ -158,9 +158,9 @@ main
   step 5 as if the worker had just reported; if the phase branch is on another
   machine and not pushed, it's lost: note it and re-dispatch), or not started.
   Then continue from the first non-landed phase, or step 6 if all landed. Behind
-  `origin/main` and not yet pushed → rebase first and rerun the gates; already
-  pushed → leave it, new commits only (step 6.4). State what you found in one
-  message to the user, then go on — no gate here.
+  `origin/main` → rebase first and rerun the gates; if that rewrites pushed
+  history, the push at step 6.4 becomes the user's (force-with-lease). State what
+  you found in one message to the user, then go on — no gate here.
 - **Epic child?** If the brief names an epic plan and your entries (`PH-xx..PH-yy`),
   skip research and planning: your `design.md` is the epic's header plus your
   entries copied verbatim (they were approved with the epic), and you go straight
@@ -339,7 +339,7 @@ their entries — those may run together. Start a worker and brief it:
 ```
 BR=phase/<id>-<NN>-<slug>
 git worktree add -b $BR .claude/worktrees/phase-<id>-<NN>-<slug> feat/<id>-<slug>
-ENV=$(worktree-env $BR)          # see "Ports and shared resources" below
+ENV=$(worktree-env $BR $PORT_VARS)   # PORT_VARS from design.md's Ports: line; see below
 herdr tab create --workspace $HERDR_WORKSPACE_ID --cwd <that path> --label <NN>-<slug> --no-focus \
   --env WORKTREE_ID=$BR --env COMPOSE_PROJECT_NAME=$(echo $BR | tr '/' '-') $ENV
     → .result.root_pane
@@ -361,23 +361,25 @@ each start dev servers, backends, browser runners, maybe containers; without
 isolation they collide. How many ports a project needs is the project's business,
 so **the repo declares its port variables and you assign the numbers**:
 
-- The declaration is a section in the repo's `CLAUDE.md`:
-  ```
-  ## Worktree ports
-  WEB_PORT API_PORT GRPC_PORT PG_PORT
-  ```
-  one line, the env var names the project's configs read, in any order. Read it
-  at intake. No section → you inject only `WORKTREE_ID` and
-  `COMPOSE_PROJECT_NAME`, and say so in the dispatch ("repo declares no ports; a
-  server you need to start is an `F-xx` against the repo, not a number you pick").
+- The list of port variables comes from **the repo's own docs**, wherever it keeps
+  them — a dev-environment or ports doc under `docs/` or a package's `docs/`
+  (e.g. `web/docs/spec/dev-ports.md`), a `.env.example`, the repo `CLAUDE.md`
+  pointing at one of those. Find it at intake (`grep -rl -i 'port' docs */docs
+  .env.example` and read the hit that lists variable names), and write the
+  resulting names into your `design.md` header as `Ports: WEB_PORT API_PORT …` so
+  every later step uses the same list. Don't invent variables the repo doesn't
+  document, and don't require the repo to document them in any particular file.
+  Nothing found → inject only `WORKTREE_ID` and `COMPOSE_PROJECT_NAME`, and say so
+  in the dispatch ("repo documents no port variables; a server you need to start
+  is an `F-xx` against the repo, not a number you pick").
 - Assignment is a block per worktree, derived from the branch so it's the same
   every time anyone computes it:
   ```
-  worktree-env() {  # $1 = branch; prints --env args
-    local names=($(sed -n '/^## Worktree ports/{n;p;}' "$(git rev-parse --show-toplevel)/CLAUDE.md"))
+  worktree-env() {  # $1 = branch, $2… = variable names; prints --env args
+    local branch=$1; shift; local names=("$@")
     local n=${#names[@]}; [ $n -eq 0 ] && return
     local stride=$(( (n + 9) / 10 * 10 ))                       # 10, 20, …
-    local base=$(( 20000 + $(python3 -c "import zlib,sys;print(zlib.crc32(sys.argv[1].encode())%(10000//$stride))" "$1") * stride ))
+    local base=$(( 20000 + $(python3 -c "import zlib,sys;print(zlib.crc32(sys.argv[1].encode())%(10000//$stride))" "$branch") * stride ))
     local i=0; for v in "${names[@]}"; do printf -- '--env %s=%s ' "$v" $((base+i)); i=$((i+1)); done
   }
   ```
@@ -389,7 +391,7 @@ so **the repo declares its port variables and you assign the numbers**:
   `COMPOSE_PROJECT_NAME`. A config that hardcodes a port is an `F-xx` against the
   repo, not something to route around per phase.
 - When *you* (or your check subagent) run anything in a phase worktree, export
-  the same block first — `eval export $(worktree-env $BR | sed 's/--env //g')`.
+  the same block first — `eval export $(worktree-env $BR $PORT_VARS | sed 's/--env //g')`.
 Then:
 
 ```
@@ -522,14 +524,19 @@ All phases passed:
 3. `git worktree list` must show no `phase/<id>-…` worktree and `herdr tab list
    --workspace $HERDR_WORKSPACE_ID` no phase tab left. Anything left means a phase
    landed without step 5's cleanup — close and remove it now, note it as `F-xx`.
-4. **Not pushed yet:** `git fetch && git rebase origin/main`, rerun the profile's
-   gates, push, `glab mr create`. **Already pushed with an MR** (a resume, or a
-   fix-up after G3 feedback): no rebase, no rewriting — push the new commits as
-   they are and `glab mr update`; catching up with `main` happens on GitLab's side
-   at merge. There is no force-push in this workflow and the sessions don't have
-   the permission for it. MR body: goal, AC table with pass/fail, Spec 改動 table,
-   the open `F-xx`/`R-xx` from `ledger.md` with one line each, and the session
-   attribution line the environment gives you.
+4. `git fetch && git rebase origin/main`, rerun the profile's gates. Then:
+   - **never pushed:** push, `glab mr create`.
+   - **pushed before, no rewrite** (only new commits on top): push, `glab mr update`.
+   - **pushed before and the rebase rewrote history:** you can't push it — you
+     have no force-push permission. Do **not** close the MR, do **not** open a new
+     MR from a new branch, do **not** undo the rebase. Update the MR body with
+     `glab mr update` (it still points at the branch), then end with the G3 report
+     saying: `branch feat/<id>-<slug> is rebased locally in <worktree path> and
+     needs --force-with-lease from you, then merge`. That push is the user's; G3
+     for this issue is force-push then merge.
+   MR body: goal, AC table with pass/fail, Spec 改動 table, the open `F-xx`/`R-xx`
+   from `ledger.md` with one line each, and the session attribution line the
+   environment gives you.
 5. Tell the user: MR URL, open findings by id, anything deferred. Then stop. The
    session's job is over; a review-comment round is a new instruction from the
    user. Leave the issue worktree and this workspace in place — `<repo>-main`'s

@@ -160,11 +160,13 @@ I'm a rebase person. Updating a branch against its base is `git rebase` (and
 history linear; don't create merge commits on my behalf. (How a finished
 branch lands — merge/squash/FF — follows the target repo's or platform's
 convention; this preference is about keeping branches up to date.) Rebase
-happens before a branch's first push; once it's pushed and has an MR, no more
-rewriting — new commits only, and catching up with `main` is done on the
-platform side. No force-push of any kind; the agents don't have that permission
-anyway. And nothing is ever pushed to `main` by an agent — every change to `main`
-arrives through an MR that I merge.
+whenever the branch needs it, pushed or not. When the push would have to be a
+force push (history rewritten after an earlier push), stop there and hand it to
+me: say the branch name and that it needs `--force-with-lease`; I push and merge.
+Agents don't have force-push permission and must never work around that —
+closing an MR and opening a new one from a fresh branch is the workaround, and it
+is forbidden. Nothing is ever pushed to `main` by an agent — every change to
+`main` arrives through an MR that I merge.
 
 ## Git: branch names on push
 
