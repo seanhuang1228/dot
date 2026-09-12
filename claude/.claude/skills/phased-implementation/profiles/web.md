@@ -27,6 +27,18 @@ where the package documents its own gates, test layout, or guard tests, those wi
 over anything here, and they are usually where the expensive-to-rediscover traps
 are written down.
 
+## Mockups (step 3, before anything else)
+
+When the entry cites a mockup under `docs/design/<issue>/mockup/`, the plan's first
+job is to extract its design tokens — colors, spacing, type sizes, radii,
+breakpoints — from the mockup's CSS into the parameter table, source column
+`from mockup`. Implementation uses those values. Never substitute a "close enough"
+token from the existing design system; if the mockup and the design system
+disagree, that's a question to the approver, not a judgment call. Layout,
+element order, and copy also come from the mockup. The acceptance check for this
+phase is a screenshot comparison against the mockup, so anything you "improved" is
+a finding.
+
 ## Parameter table categories (step 3)
 
 Hardcoded: route paths and query-parameter *names*, i18n keys, `data-testid`

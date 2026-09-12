@@ -159,7 +159,12 @@ I'm a rebase person. Updating a branch against its base is `git rebase` (and
 `git pull --rebase`), never a merge commit into the feature branch. Keep
 history linear; don't create merge commits on my behalf. (How a finished
 branch lands — merge/squash/FF — follows the target repo's or platform's
-convention; this preference is about keeping branches up to date.)
+convention; this preference is about keeping branches up to date.) Rebase
+happens before a branch's first push; once it's pushed and has an MR, no more
+rewriting — new commits only, and catching up with `main` is done on the
+platform side. No force-push of any kind; the agents don't have that permission
+anyway. And nothing is ever pushed to `main` by an agent — every change to `main`
+arrives through an MR that I merge.
 
 ## Git: branch names on push
 

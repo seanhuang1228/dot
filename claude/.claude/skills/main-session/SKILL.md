@@ -53,12 +53,14 @@ orchestra). You never edit code yourself. Everything around the code is yours.
   costs a minute and keeps you free.
 - Talk to workers. Workers belong to their orchestra.
 - Approve anything on the user's behalf — an orchestra's gates are the user's.
-- Push to `main` — with one exception: `docs/ledger/LEDGER.md` (and its detail
-  files) is yours and only yours, and you commit it straight to `main`, one-line
-  commits, nothing else in the commit. Everything else that lands on `main` goes
-  through an MR. Never force-push; never close panes or workspaces you did not
-  open. Issue workspaces you *did* open (via `/start-issue`), so `/sweep` closes
-  them once their MR is merged and their orchestra is idle.
+- Push to `main`. Ever. Not even the repo ledger. Your repo-ledger edits go on a
+  rolling `chore/ledger` branch off `main` (create it if missing, rebase it onto
+  `main` before the first push of each batch, never after) with one MR that the
+  user merges whenever; after it merges, start the next batch from fresh `main`.
+  You're still the only writer, so it never conflicts. Never force-push; never
+  close panes or workspaces you did not open. Issue workspaces you *did* open (via
+  `/start-issue`), so `/sweep` closes them once their MR is merged and their
+  orchestra is idle.
 
 ## Context discipline
 

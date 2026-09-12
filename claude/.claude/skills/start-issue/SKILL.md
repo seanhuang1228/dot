@@ -36,8 +36,16 @@ under a minute.
    verbatim or, past ~40 lines, as a summary with a note that the orchestra must
    read the full issue itself.
 2. **Slug.** Kebab-case, ≤ 4 words, from the title: `42-multi-exchange`. Check
-   `docs/design/` and `git branch --list 'feat/42-*'` — a collision means the issue
-   was started before; stop and tell the user which worktree/branch exists.
+   `docs/design/` and `git branch -a --list '*feat/42-*'` — a collision means the
+   issue was started before. Without `--resume`, stop and tell the user which
+   worktree/branch exists. **With `--resume`** (`/start-issue #42 --resume`): take
+   the existing branch (fetch it if it's only on `origin`), keep its slug, skip
+   issue creation and the ledger step, and in step 3 create the worktree *from that
+   branch* instead of `-b`: `herdr worktree create --cwd "$ROOT" --branch
+   feat/<id>-<slug> --path "$ROOT/.claude/worktrees/feat-<id>-<slug>" …` (existing
+   branch, no `--base`). The brief (step 6) says `Resume: yes — find where it
+   stands from design.md, ledger.md, and git log; don't redo landed phases`.
+   Used when an orchestra died, or the work moves to another machine.
 3. **Worktree + workspace.**
    ```
    git worktree prune
@@ -73,10 +81,10 @@ under a minute.
 4. **Repo ledger.** If the request was an `I-xx`, graduate it to `FT-xx`
    (item-ledger rules); otherwise mint `FT-xx` directly. The line links to
    `docs/design/<id>-<slug>/` (which doesn't exist yet — the orchestra creates it).
-   Commit it on `main`, in the main checkout: `git add docs/ledger && git commit -m
-   "ledger: FT-xx for #<id>" && git push`. This is the one thing main commits to
-   `main` directly (docs/ledger only) — the issue branch must not carry repo-ledger
-   changes, or two issues merging collide on it.
+   Commit it on main's rolling `chore/ledger` branch (see `main-session`), never on
+   `main` and never on the issue branch — two issue branches carrying repo-ledger
+   edits collide at merge. If the `chore/ledger` MR isn't open yet, open it; the
+   user merges it whenever.
 5. **Start the orchestra.**
    ```
    herdr agent start orch-<id> --kind claude --pane <root_pane> -- -n orch-<id> --model <fable|opus>
@@ -101,6 +109,7 @@ under a minute.
    Related spec files: docs/spec/<a>.md, docs/spec/<b>.md   (your best guess; say "none known" if none)
    Related open ledger items: <ids or none>
    Context the user gave: <Lark links / MR ids / anything pasted, or none>
+   Mockup: none | <path to the HTML file(s)> — this is spec, copy it into the issue dir
    Gates G1/G2/G3 and blockers go to the user, not to me. Do not message me at all — cross-issue facts are in docs/design/*/design.md and git worktree list; leftovers go in your ledger.md.
    ```
 7. **Report to the user**, four lines: workspace label, orchestra name and model

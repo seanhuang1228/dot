@@ -89,7 +89,7 @@ every rebase, so a repo has two levels and each file has exactly one writer:
 
 | ledger | path | writer | holds |
 | --- | --- | --- | --- |
-| repo | `docs/ledger/LEDGER.md` | the repo's main session, committing directly to `main` | `I`, `FT`, risks that outlive an issue, `pre-existing:` findings |
+| repo | `docs/ledger/LEDGER.md` | the repo's main session, on its rolling `chore/ledger` branch + one MR (nothing is ever pushed to `main`) | `I`, `FT`, risks that outlive an issue, `pre-existing:` findings |
 | issue | `docs/design/<id>-<slug>/ledger.md` | that issue's orchestra, on the issue branch | that issue's `F`, `T`, `Q`, `D`, `R` |
 
 Resolution: inside an issue directory (or a session whose brief names one), the

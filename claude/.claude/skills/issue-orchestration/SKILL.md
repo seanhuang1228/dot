@@ -145,8 +145,22 @@ main
   go in it.
 - Create `docs/design/<id>-<slug>/` with an empty `ledger.md` (item-ledger format,
   `next:` all at 01). `docs/ledger/LEDGER.md` is not yours to create or edit.
-- Read the existing `docs/spec/` files for the modules the issue touches — that's
-  what you're changing, so know it before research.
+- Skim the existing `docs/spec/` files for the modules the issue touches — headers
+  and section titles (`grep '^#'`), not the full text. You need to know what exists;
+  the planner (step 2) reads them in full. Your context holds decisions, not
+  documents — measured 2026-09-11: orchestras that read research, spec, and entries
+  into context sat at 200–230K per call for the whole issue.
+- **Resuming?** If the brief says `Resume: yes`, the branch already carries work.
+  Before anything else: `git log origin/main..HEAD --oneline`, `design.md`'s phase
+  index, `ledger.md`, and `git worktree list` for `phase/<id>-*` branches. From
+  those, decide per phase: landed (its commits are on the issue branch), in flight
+  (a `phase/` branch exists with commits past the issue branch — check it with
+  step 5 as if the worker had just reported; if the phase branch is on another
+  machine and not pushed, it's lost: note it and re-dispatch), or not started.
+  Then continue from the first non-landed phase, or step 6 if all landed. Behind
+  `origin/main` and not yet pushed → rebase first and rerun the gates; already
+  pushed → leave it, new commits only (step 6.4). State what you found in one
+  message to the user, then go on — no gate here.
 - **Epic child?** If the brief names an epic plan and your entries (`PH-xx..PH-yy`),
   skip research and planning: your `design.md` is the epic's header plus your
   entries copied verbatim (they were approved with the epic), and you go straight
@@ -165,8 +179,12 @@ of `design.md` with one line per reason the list was empty — the user sees tha
 G2 and can send you back.
 
 Otherwise fan out
-**one subagent per source** (general-purpose, `model: "opus"`, in parallel — they
-read and report, they don't design): one per exchange, one per
+**one subagent per source** (general-purpose, `model: "sonnet"`, in parallel — they
+read and report, they don't design; measured 2026-09-11: identical token profiles
+cost 2.5× on opus for no decision made). Each writes its full report to
+`docs/design/<id>-<slug>/research/<source>.md` and returns to you **at most 15
+lines**: what it confirmed, what's `unverified`, questions for the user. You never
+read the full reports; `research.md` links them. one per exchange, one per
 external API, one for the relevant part of the codebase. Give every subagent this
 boundary verbatim:
 
@@ -176,9 +194,11 @@ boundary verbatim:
 > would have checked. Never put credentials in your report. Report each fact with how
 > you verified it: `curl`, `ws`, `doc`, or `unverified`.
 
-Consolidate into `research.md`: a needs table (`N-1…`), one source-comparison table per
-need with a verification column, an **Unverified** list (`U-1…`), and the questions
-you need the user to answer (mint them as ledger `Q-xx` now).
+Consolidate the summaries into `research.md`: a needs table (`N-1…`), per need one
+line per source with its verification tag and a link to `research/<source>.md`
+for the detail, an **Unverified** list (`U-1…`), and the questions you need the
+user to answer (mint them as ledger `Q-xx` now). The per-source tables live in the
+per-source files, written by the subagents — not in your context.
 
 **Then decide whether G1 fires.** Stop and end the turn only if:
 
@@ -203,22 +223,43 @@ not a separate approval of the research.
 
 After research (and after G1, if it fired):
 
-1. **Rewrite `docs/spec/`.** Edit the module and contract specs in place so they
-   describe the system as it will be after this issue. New module → new file. Every
-   spec file you touch gets its `最近改動: #<id>` header line updated. Decisions with a
-   "why" become `D-xx` ledger items; the spec cites the id.
+1. **Decide, then delegate the writing.** The spec rewrite and the phase entries
+   are long-form documents; you don't hold them. You settle the decisions (`D-xx`
+   in the ledger, one line each with the rejected alternative) from the research
+   summaries and the issue, and hand them to the planner in step 3, which rewrites
+   `docs/spec/` and writes the entries. Every spec file it touches gets its
+   `最近改動: #<id>` header line; the spec cites `D-xx` ids, never restates the why.
 2. **Write the top of `design.md`.** Unverified premises first (with how the
    design absorbs each), goal, non-goals, Spec 改動 table, AC table (id, condition,
    verification method — a method you can actually run at phase check: integration
-   test, e2e, unit, manual command), touched modules and explicit not-touched
-   modules, and a one-line phase index.
-3. **Have a planner write the phase entries.** Launch one subagent
-   (general-purpose, `model: "fable"`, high effort) with the spec files, `design.md`
-   so far, `research.md`, and read access to the code. It writes the `## Phases`
-   section: one **complete entry per phase**, in the shape below, so that a worker
-   can start from the entry alone and you can check the result against it alone.
-   This is the planning cost of the issue, paid once, by one author — phases
-   planned one at a time by different sessions drift from each other.
+   test, e2e, unit, screenshot, manual command), touched modules and explicit
+   not-touched modules, and a one-line phase index.
+
+   **A design mockup is spec.** When the issue comes with an HTML mockup (CSS
+   included, opens in a browser), copy it verbatim into
+   `docs/design/<id>-<slug>/mockup/` and list it under a `## Binding constraints`
+   line in `design.md`. It is not a reference image: structure, spacing, colors,
+   type sizes, copy — all come from it. A conflict between the mockup and the
+   existing design system is a `Q-xx` for the user at G2, not a judgment call by
+   anyone downstream. Every fe entry the planner writes cites the mockup file and
+   the region it implements, and carries at least one visual AC:
+   `AC-V<n>: at <viewport> the <screen/region> matches mockup/<file> (screenshot)`.
+3. **Have a planner rewrite the spec and write the phase entries.** Launch one
+   subagent (general-purpose, `model: "fable"`, high effort) with: the `D-xx`
+   decisions, `design.md` so far, the paths of `research.md` and `research/`, the
+   spec files to rewrite, and read access to the code. It (a) rewrites `docs/spec/`
+   in place per the decisions, (b) writes the `## Phases` section of `design.md`:
+   one **complete entry per phase**, in the shape below, so that a worker can start
+   from the entry alone and a check subagent can judge the result against it
+   alone, and (c) returns to you **only** the phase index (one line per phase:
+   number, domain, one-liner, depends-on, `Parallel-ok`, `Thin` if so, and the
+   entry's In-scope file paths — you paste those into the dispatch as `Start here`)
+   plus the
+   list of spec files it changed with one line each. You do not read the entries
+   or the spec diff; `git diff --stat docs/spec/` is your check that it touched
+   what the Spec 改動 table says. This is the planning cost of the issue, paid
+   once, by one author — phases planned one at a time by different sessions drift
+   from each other.
 
    ```
    ### PH-NN — <one line>
@@ -357,7 +398,8 @@ SendMessage to w-<id>-<NN>-<domain>:
 Phase <NN> of issue <id>-<slug>. Run /phased-implementation.
 Issue dir: docs/design/<id>-<slug>/  (read design.md; your phase is #<NN>)
 Spec: docs/spec/<a>.md, docs/spec/<b>.md  (base for everything; deviations are blockers)
-Entry: design.md § PH-<NN>  (complete | thin — <what's missing>)
+Entry: design.md § PH-<NN>  (complete | thin — <what's missing>) — read it first; it is your plan
+Start here: <the entry's In-scope file list, copied from the index line's paths, one per line>
 Co-sign: no | yes   (yes only for a thin entry)
 AC covered: AC-x, AC-y
 Approver: orch-<id>  — questions and completion report come to me.
@@ -396,9 +438,9 @@ context per turn for a whole issue, and every cache miss re-wrote all of it. You
 context holds the design and the decisions; the diff goes to a subagent.
 
 Launch one **check subagent** (general-purpose, `model: "opus"`, high effort) per
-finished phase. Give it, verbatim: the phase's AC rows from `design.md` (id,
-condition, verification method), the spec files the phase touches, the touched
-modules list and the not-touched list, the worker's reported deviations, the
+finished phase. Give it paths, not text: `design.md` and the entry id `PH-NN` (it
+reads the entry's AC, scope, and not-touched list itself), the spec files the
+entry names, the worker's reported deviations (that one is short — paste it), the
 diff command `git diff <base-sha>..phase/<id>-<NN>-<slug> -- <touched paths>`, the
 worker's worktree path, and the env block (the repo's declared port variables plus
 `WORKTREE_ID`/`COMPOSE_PROJECT_NAME`, recomputed from the branch with
@@ -412,6 +454,10 @@ The subagent checks, in this order:
 1. **AC** — for each AC id of this phase, run its verification method from
    `design.md`. "Tests pass" is not an AC check unless the AC says unit test. If the
    profile has an acceptance section (the web profile does: run the app, look), do it.
+   For a `screenshot` AC: with Playwright, capture the mockup file and the running
+   app at the same viewport, then list differences element by element — color,
+   spacing, type size, missing or extra elements, copy — as findings. "Looks close"
+   is a fail; the mockup is the contract.
 2. **Structure vs spec** — new modules outside the touched list, new abstractions or
    config knobs the spec doesn't have, behaviour that differs from the spec text,
    spec text the worker should have rewritten and didn't.
@@ -476,11 +522,14 @@ All phases passed:
 3. `git worktree list` must show no `phase/<id>-…` worktree and `herdr tab list
    --workspace $HERDR_WORKSPACE_ID` no phase tab left. Anything left means a phase
    landed without step 5's cleanup — close and remove it now, note it as `F-xx`.
-4. Push the issue branch and open the MR with `glab mr create`: title from the
-   issue, body = goal, AC table with pass/fail, Spec 改動 table, the open `F-xx`/
-   `R-xx` from `ledger.md` with one line each, and the session attribution line the
-   environment gives you. Never push
-   with `--force`.
+4. **Not pushed yet:** `git fetch && git rebase origin/main`, rerun the profile's
+   gates, push, `glab mr create`. **Already pushed with an MR** (a resume, or a
+   fix-up after G3 feedback): no rebase, no rewriting — push the new commits as
+   they are and `glab mr update`; catching up with `main` happens on GitLab's side
+   at merge. There is no force-push in this workflow and the sessions don't have
+   the permission for it. MR body: goal, AC table with pass/fail, Spec 改動 table,
+   the open `F-xx`/`R-xx` from `ledger.md` with one line each, and the session
+   attribution line the environment gives you.
 5. Tell the user: MR URL, open findings by id, anything deferred. Then stop. The
    session's job is over; a review-comment round is a new instruction from the
    user. Leave the issue worktree and this workspace in place — `<repo>-main`'s
