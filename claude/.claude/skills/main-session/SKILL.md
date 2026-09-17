@@ -95,7 +95,7 @@ half-done.
 ```
 herdr agent list | python3 -c 'import sys,json,os,glob
 for a in json.load(sys.stdin)["result"]["agents"]:
-    if (a.get("name") or "") != "<repo>-main": continue
+    if (a.get("name") or a.get("terminal_title_stripped") or "") != "<repo>-main": continue
     sid=(a.get("agent_session") or {}).get("value","")
     for f in glob.glob(os.path.expanduser("~/.claude/projects/*/%s.jsonl"%sid)):
         fh=open(f,"rb"); fh.seek(0,2); n=fh.tell(); fh.seek(max(0,n-400000)); c=0
@@ -108,8 +108,10 @@ for a in json.load(sys.stdin)["result"]["agents"]:
         print(c)'
 ```
 
-The transcript's per-turn `usage` objects are an internal format, not a documented
-API — `/context` is the documented view and no hook carries token counts. If the
+`herdr agent list` carries `name` only for agents it started itself; a session you
+started by hand (`claude -n <repo>-main`) is identified by
+`terminal_title_stripped`, hence the fallback. The transcript's per-turn `usage`
+objects are an internal format, not a documented API — `/context` is the documented view and no hook carries token counts. If the
 command above ever prints nothing or crashes, drop it and say so; don't rebuild it
 from guesses.
 
