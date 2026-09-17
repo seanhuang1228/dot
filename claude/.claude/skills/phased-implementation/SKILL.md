@@ -54,8 +54,12 @@ opts) when launching each subagent — don't leave them defaulted.
 
 0. **Confirm the worktree.** Dispatched: you were started inside the phase
    worktree; `git branch --show-current` must equal the branch the dispatch names
-   and `git status --porcelain` must be empty. Anything else → report it to the
-   approver and stop; don't fix it by creating or switching worktrees. Never remove
+   and `git status --porcelain` must be empty. If `pwd` is the home directory, or
+   git says this isn't a repository, the tab was opened in the wrong place — say
+   exactly that to the approver in one line and stop. Don't cd anywhere, don't
+   look for the worktree, don't start work: the dispatch is broken and only the
+   approver can redo it. Anything else unexpected → report it to the approver and
+   stop; don't fix it by creating or switching worktrees. Never remove
    the worktree or close your own session when you're done: the approver does both
    when it lands the phase. Standalone: work in the tree you were started in; don't
    open a worktree unless the user asks.

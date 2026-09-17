@@ -337,12 +337,15 @@ has landed (step 5). The only exception is a pair marked `Parallel-ok: yes` in
 their entries — those may run together. Start a worker and brief it:
 
 ```
+ROOT=$(git rev-parse --show-toplevel)
 BR=phase/<id>-<NN>-<slug>
-git worktree add -b $BR .claude/worktrees/phase-<id>-<NN>-<slug> feat/<id>-<slug>
+WT="$ROOT/.claude/worktrees/phase-<id>-<NN>-<slug>"
+git worktree add -b $BR "$WT" feat/<id>-<slug>
+test -d "$WT/.git" || exit 1
 ENV=$(worktree-env $BR $PORT_VARS)   # PORT_VARS from design.md's Ports: line; see below
-herdr tab create --workspace $HERDR_WORKSPACE_ID --cwd <that path> --label <NN>-<slug> --no-focus \
+herdr tab create --workspace $HERDR_WORKSPACE_ID --cwd "$WT" --label <NN>-<slug> --no-focus \
   --env WORKTREE_ID=$BR --env COMPOSE_PROJECT_NAME=$(echo $BR | tr '/' '-') $ENV
-    → .result.root_pane
+    → .result.root_pane, and .result.root_pane.cwd MUST equal "$WT" — see below
 herdr agent start w-<id>-<NN>-<domain> --kind claude --pane <root_pane> -- -n w-<id>-<NN>-<domain> --model opus
 ```
 
@@ -353,8 +356,17 @@ opus for execution against an existing pattern); if the issue turns out to need
 more judgment than that — research changed the scope, a contract has to be shaped
 — say so at G1/G2 and let the user decide whether to restart you on fable.
 
-`agent start` waits for readiness; if it fails, close the tab, remove the worktree
-and branch, and raise a blocker — don't retry blind.
+**Both paths absolute, and verify where the tab landed.** Verified 2026-09-16:
+`herdr tab create --cwd` given a relative path, or a path that doesn't exist,
+silently opens the tab in the **home directory** and still returns success. An
+agent started there sits in no repo at all and hangs at its step 0 — this is the
+single most common way a dispatch fails. So build `$WT` from `git rev-parse
+--show-toplevel`, confirm the worktree exists before creating the tab, and compare
+`.result.root_pane.cwd` with `$WT` before starting anything in it.
+
+`agent start` waits for readiness; if it fails — or if that cwd check didn't
+match — close the tab, remove the worktree and branch, and raise a blocker; don't
+retry blind.
 
 **Ports and shared resources.** Parallel phases (and your own verification runs)
 each start dev servers, backends, browser runners, maybe containers; without

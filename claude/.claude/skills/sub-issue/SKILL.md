@@ -47,8 +47,11 @@ main session offers `/start-issue`. Never grind.
 3. Branch and worktree (absolute path, under the repo):
    ```
    ROOT=$(git rev-parse --show-toplevel)
-   git worktree add -b fix/<slug> "$ROOT/.claude/worktrees/fix-<slug>" main
-   herdr tab create --workspace $HERDR_WORKSPACE_ID --cwd "$ROOT/.claude/worktrees/fix-<slug>" --label sub-<slug> --no-focus
+   WT="$ROOT/.claude/worktrees/fix-<slug>"
+   git worktree add -b fix/<slug> "$WT" main && test -d "$WT/.git"
+   herdr tab create --workspace $HERDR_WORKSPACE_ID --cwd "$WT" --label sub-<slug> --no-focus
+   # .result.root_pane.cwd MUST equal "$WT" — a relative or missing --cwd silently
+   # opens the tab in the home directory and still reports success
    herdr agent start sub-<slug> --kind claude --pane <root_pane> -- -n sub-<slug> --model <opus|sonnet>
    ```
    `fix/` for bug fixes, `chore/` for the rest (branch-naming rule). Slug ≤ 4 words.
