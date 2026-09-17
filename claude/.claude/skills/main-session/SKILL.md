@@ -123,6 +123,15 @@ Past **150k**, and only if every one of these holds, say so in one line:
 - nothing is waiting on the user that they'd have to re-explain after a clear
 - anything worth keeping across the clear is in memory, not in this transcript
 
+**Clear, never compact.** Compaction earns its cost only when context holds
+something that isn't written down and is still needed — the exact state your
+rules forbid you to be in. When the ledger, memory and spec are current, a
+compact buys a lossy summary of things already recorded properly and then
+charges you to carry it every turn. Clear loses everything predictably; compact
+loses something you can't name. Don't offer it, don't run it, and don't suggest
+either one for an orchestra or a worker — they hold unwritten work mid-task, so
+auto-compaction is the right fallback there and nobody should intervene.
+
 The line is an offer with the number and what survives, never an instruction and
 never a nag: `context 168k，手上沒有未完的事，ledger 已推；現在 /clear 不會掉東西`.
 Below the threshold, or with any of those open, say nothing — a clear suggested
