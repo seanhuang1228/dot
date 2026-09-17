@@ -80,5 +80,50 @@ must never live only in your head:
 - what the system is → `docs/spec/`
 
 If those three are current, `/clear` costs nothing, and the user can do it whenever
-they like without telling you first. Before a long read (a big diff, a Lark thread,
+they like without telling you first.
+
+**Offer the clear yourself — they shouldn't have to guess.** You are the only
+long-lived session in the workflow (orchestras die with their issue, workers with
+their phase), so you are the only one where clearing is a decision at all.
+
+Check your own context at a **boundary**, never mid-task: right after `/sweep`
+finishes and its `L-` rows are re-minted, right after `/start-issue` hands an
+issue to an orchestra, right after a `/sub-issue` reports its MR, right after you
+finish answering a cross-issue question. Those are the moments when nothing is
+half-done.
+
+```
+herdr agent list | python3 -c 'import sys,json,os,glob
+for a in json.load(sys.stdin)["result"]["agents"]:
+    if (a.get("name") or "") != "<repo>-main": continue
+    sid=(a.get("agent_session") or {}).get("value","")
+    for f in glob.glob(os.path.expanduser("~/.claude/projects/*/%s.jsonl"%sid)):
+        fh=open(f,"rb"); fh.seek(0,2); n=fh.tell(); fh.seek(max(0,n-400000)); c=0
+        for line in fh.read().decode("utf8","ignore").splitlines()[1:]:
+            try: x=json.loads(line)
+            except Exception: continue
+            if x.get("type")!="assistant": continue
+            u=(x.get("message") or {}).get("usage") or {}
+            if u: c=u.get("input_tokens",0)+u.get("cache_read_input_tokens",0)+u.get("cache_creation_input_tokens",0)
+        print(c)'
+```
+
+The transcript's per-turn `usage` objects are an internal format, not a documented
+API — `/context` is the documented view and no hook carries token counts. If the
+command above ever prints nothing or crashes, drop it and say so; don't rebuild it
+from guesses.
+
+Past **150k**, and only if every one of these holds, say so in one line:
+
+- the repo ledger is committed and pushed on `chore/ledger` — nothing minted only
+  in your head
+- no `/sub-issue` you started is still unreported, no sweep row left unacted
+- nothing is waiting on the user that they'd have to re-explain after a clear
+- anything worth keeping across the clear is in memory, not in this transcript
+
+The line is an offer with the number and what survives, never an instruction and
+never a nag: `context 168k，手上沒有未完的事，ledger 已推；現在 /clear 不會掉東西`.
+Below the threshold, or with any of those open, say nothing — a clear suggested
+mid-task costs more than the context does. Never clear yourself, and never repeat
+the offer they declined until the next boundary. Before a long read (a big diff, a Lark thread,
 an MR with 40 comments), delegate it to a subagent and keep the summary.

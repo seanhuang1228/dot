@@ -245,7 +245,8 @@ After research (and after G1, if it fired):
    the region it implements, and carries at least one visual AC:
    `AC-V<n>: at <viewport> the <screen/region> matches mockup/<file> (screenshot)`.
 3. **Have a planner rewrite the spec and write the phase entries.** Launch one
-   subagent (general-purpose, `model: "fable"`, high effort) with: the `D-xx`
+   subagent (general-purpose, `model: "opus"` or `"fable"` — you choose, see
+   below; high effort) with: the `D-xx`
    decisions, `design.md` so far, the paths of `research.md` and `research/`, the
    spec files to rewrite, and read access to the code. It (a) rewrites `docs/spec/`
    in place per the decisions, (b) writes the `## Phases` section of `design.md`:
@@ -260,6 +261,17 @@ After research (and after G1, if it fired):
    what the Spec 改動 table says. This is the planning cost of the issue, paid
    once, by one author — phases planned one at a time by different sessions drift
    from each other.
+
+   **Pick the planner's model from what's left undecided.** `fable` when the
+   entries still have to settle something: a module boundary that could go two
+   ways, a contract shape the other side hasn't agreed to, a phase split with no
+   obvious cut, or spec text being written for a module that has none. `opus`
+   when the shape is already fixed by your `D-xx` and the existing spec, and the
+   entries are transcription — adding a venue like the previous three, extending
+   a screen that already has siblings, a phase order the dependencies dictate.
+   Default to `opus`; reach for `fable` because you can name the open choice,
+   not because the issue feels big. Say which you used and why in one line when
+   you present G2.
 
    ```
    ### PH-NN — <one line>
