@@ -77,11 +77,11 @@ session as blocked from the ended turn.
 docs/
 ├── ledger/LEDGER.md                 # repo-level ledger — main's; you never write it
 ├── spec/<module>.md                 # living spec, present tense, rewritten in place
-└── design/<issue-id>-<slug>/        # this issue's delta; read-only once the issue closes
-    ├── ledger.md                    # this issue's ledger — yours, the only writer
-    ├── research.md                  # G1 only if it raised questions; else read at G2
-    ├── design.md                    # G2
-    └── phases/NN-<slug>.md          # worker plans, one per phase
+└── design/<issue-id>-<slug>/        # this issue's delta; frozen once the issue closes
+    ├── ledger.md                    # this issue's ledger — yours, the only writer; deleted at close
+    ├── research.md                  # G1 only if it raised questions; else read at G2; deleted at close
+    ├── design.md                    # G2 — the only file that survives the close
+    └── phases/NN-<slug>.md          # worker plans, one per phase; deleted at close
 ```
 
 Rules that make this layout work:
@@ -100,6 +100,16 @@ Rules that make this layout work:
   `<repo>-main`'s, and two branches writing it is exactly the collision the split
   exists to avoid. Commit ledger updates on the issue branch as you go; a phase
   branch that then can't fast-forward rebases at land time (step 5), docs-only.
+- **Your `ledger.md` is a working file, not an archive.** It lives exactly as long
+  as the issue: at close, `/sweep` sends every item to its destination — `D` lifted
+  verbatim into `docs/ledger/decisions.md` with its id intact, `T`/`FT`/`I` to the
+  repo's task system or lifted the same way, `R`/`F` re-minted at repo level — and
+  deletes the file; git history keeps it. Write it exactly as you do today and
+  don't pre-sort what survives, nothing is lost by being in it. The ids you mint
+  are permanent, so spec text may cite `42/D-03` and still resolve years later.
+  The same close removes `research.md`, `research/` and `phases/` — everything in
+  this directory except `design.md` is written to be read once, by a gate or a
+  worker, and `design.md` is what outlives the issue. Write it accordingly.
 - `research.md` and `phases/` are frozen after their gate. Never edit them to match
   what was built — that goes in the spec (present) and the ledger (why).
 - Docs follow the repo's language. The example tree under
@@ -491,7 +501,11 @@ The subagent checks, in this order:
    now, ledger `D-xx`) or a finding.
 
 You read the report, not the diff. Every problem becomes a ledger `F-xx` (you
-mint; the subagent doesn't). If the report is ambiguous on one item, ask the same
+mint; the subagent doesn't). **A finding the phase did not cause is minted as
+`pre-existing: <title>`, in the line itself.** You are the only one who can tell:
+you hold the design and the check report, and by close nothing can re-derive it
+from the ledger line. `/sweep` carries the marker across verbatim when it re-mints
+the finding at repo level. If the report is ambiguous on one item, ask the same
 subagent a follow-up rather than opening the diff yourself. Then:
 
 - **pass** → land it and clean up, in one step:
@@ -540,11 +554,11 @@ All phases passed:
    comment-level nits. Findings for this issue are what the per-phase checks
    minted in `ledger.md`; nothing new is generated here.
 2. Confirm every spec file in the Spec 改動 table has its `最近改動` line and matches
-   what was built. Confirm the issue `ledger.md` has no `open` `Q-xx`. Add a final
-   section `## Leftovers` to `ledger.md` listing every item still `open` that
-   outlives the issue (`R-xx`, `pre-existing:` findings), one line each. Nobody is
-   messaged; `/sweep` reads this section from merged issues and main re-mints what
-   it keeps.
+   what was built. Confirm the issue `ledger.md` has no `open` `Q-xx` — that is
+   the only class with nowhere to go at close. Leave every other item exactly as
+   it stands: no summary section, no pre-sorting of what survives. `/sweep` reads
+   the whole ledger when the MR merges and sends each item to its destination
+   mechanically. Nobody is messaged.
 3. `git worktree list` must show no `phase/<id>-…` worktree and `herdr tab list
    --workspace $HERDR_WORKSPACE_ID` no phase tab left. Anything left means a phase
    landed without step 5's cleanup — close and remove it now, note it as `F-xx`.

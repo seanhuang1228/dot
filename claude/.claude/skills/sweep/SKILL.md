@@ -6,9 +6,10 @@ description: Clean up what the issue workflow leaves behind in a repo — merged
 # Sweep
 
 Three passes, each with a hard line between **act** (provably done, remove it) and
-**list** (anything else, show it with what you'd need to know). Run pass 2's
-workspace closes before pass 1's worktree removals — a workspace's cwd is its
-worktree. Never cross the
+**list** (anything else, show it with what you'd need to know), plus pass 2b, which
+closes the books of the issues the first two passes just put away — the one pass
+that writes files. Run pass 2's workspace closes before pass 1's worktree removals
+— a workspace's cwd is its worktree. Never cross the
 line because something "looks stale". Print one report at the end; nothing else.
 
 Run from the repo's main checkout (`git rev-parse --show-toplevel` is the repo,
@@ -56,27 +57,63 @@ workspace `herdr tab list --workspace <id>` and `herdr agent list`.
 - Never close a workspace you can't tie to a merged issue branch, and never a tab
   you can't tie to a merged phase branch.
 
-## 2b. Leftovers — only from what this run swept
+## 2b. Close the books — only for the issues this run swept
 
 Scope: the issues **this run** just cleaned up — the workspaces closed in pass 2
-and the `feat/` worktrees removed in pass 1, nothing else. An issue whose cleanup
-happened in an earlier run is done with; its `ledger.md` keeps its leftovers and
-nobody re-reads them. Listing every merged issue's leftovers on every sweep turns
-the report into a backlog that gets skimmed and then ignored — the whole point is
-that a leftover surfaces once, at the moment its issue is put away.
+and the `feat/` worktrees removed in pass 1, nothing else. An issue cleaned up in
+an earlier run had its books closed then and its `ledger.md` is already gone;
+there is nothing to re-read. Closing the books is mechanical, so it happens once,
+at the moment the issue is put away.
 
 For each of those issues, read `docs/design/<id>-<slug>/ledger.md` on `main` (it
-survives the worktree removal) and take its `## Leftovers` items that aren't
-already marked `dropped — moved to …`:
+survives the worktree removal) and send **every** item to its destination per the
+close table in `item-ledger`. No "deserves to outlive the issue" judgment, no
+`dropped` rows, nothing ignored. Every `D` travels; for the other classes only
+`open` and `blocked` rows do (a `done` row was finished inside the issue and has
+nothing left to carry):
 
-- **list:** each item as an `L-n` row carrying its source id, `L-1 59/R-01 —
-  <title>`. Sweep never writes ledgers; the re-mint is main's, per `main-session`
-  step 5: a new repo-level id on the `chore/ledger` branch citing `59/R-01`, and
-  the issue line closed `dropped — moved to R-07`. End the report by naming that
-  as the next action when any `L-` row exists — this is the only place a merged
-  issue's leftovers ever surface, so a sweep that lists them and says nothing
-  loses them. No issue cleaned up this run → no `Leftovers` section in the
-  report, not an empty one.
+- `D` → append verbatim to `docs/ledger/decisions.md` under `## #<id> <slug>`
+  (create the section, issues in ascending order), id unchanged: `8/D-31` stays
+  `8/D-31`, because spec and code already cite it.
+- `T`, `FT`, `I` → the repo's task system if it has one — the repo's `CLAUDE.md`
+  names the integration and the skill that drives it: create each as a Task in
+  Triage through that skill, citing `8/T-01`. Nothing named → lift verbatim into
+  `LEDGER.md`, ids unchanged, exactly like `D`.
+- `R`, `F` → re-mint in `LEDGER.md` with a new repo id, the line citing its
+  source: `R-36 open — <title> (8/R-03)`,
+  `F-12 open — pre-existing: <title> (8/F-07)`. Carry the `pre-existing:` marker
+  across exactly as the issue line has it — the orchestra decided that at mint
+  time and nothing here can re-derive it.
+- `Q` still `open` → tracked nowhere. One row in the report for the user. The
+  orchestra is supposed to have closed these at G3, so an open one is a finding
+  about that issue, not a backlog item.
+- A `## Leftovers` section appears only in ledgers written before 2026-09-30; it
+  duplicates rows already handled above — skip it, don't process an item twice.
+
+Then empty the directory of everything that was working material:
+
+```
+git rm -r docs/design/<id>-<slug>/ledger.md docs/design/<id>-<slug>/research.md \
+          docs/design/<id>-<slug>/research/ docs/design/<id>-<slug>/phases/
+```
+
+`design.md` stays and is the only thing that stays — it is the issue's durable
+record (goal, AC, Spec 改動 table, touched modules, phase list), and the
+cross-issue questions main answers read exactly that. Everything else was written
+to be read once, by a gate or a worker that no longer exists: nobody has ever
+reused another issue's research, and a landed phase plan has no reader at all.
+Git history keeps all of it, and `design.md`'s links into `research/` go dangling
+— that is accepted, the file is frozen and the links resolve in history.
+
+`R` and `F` never go into the GitLab issue tree or the task system — not
+actionable, so as child items they hold the tree open forever and a
+stale-activity patrol reports them every run.
+
+All of it — both ledger files and the deletion — is one commit on main's rolling
+`chore/ledger` branch, in the same batch and MR as every other ledger edit
+(`main-session` step 5). Nothing is pushed to `main`. This is the one pass where
+sweep writes: it runs inside the main session, which is the only writer of those
+files.
 
 ## 3. Sessions
 
@@ -98,15 +135,21 @@ Swept:
 - closed workspace 59-venue-follows-pair (MR merged, orch idle)
 - removed worktree <path> (branch <b>, merged)
 - closed tab <label> in <workspace>
-Leftovers to re-mint (mine):
-- L-1 59/R-01 — playwright reuseExistingServer picks up another worktree's dev server
-- L-2 60/F-08 — pre-existing: deviation copy duplicated in two components
+Books closed:
+- #59 venue-follows-pair — 9 items; ledger.md, research/, phases/ deleted
+  59/D-04, 59/D-05 → decisions.md
+  59/R-01 → R-36   59/F-08 → F-12 (pre-existing)
+  59/T-02 → Task "wire OpenAPI client" (Triage)   59/I-01 → Task (Triage)
+Open at close (tracked nowhere):
+- Q-1 59/Q-02 — orderbook 一定要 20 檔？orchestra closed G3 with it open
 Left for you:
 - W-1 <path> — <branch>, 3 ahead, dirty, cwd of market-worker
 - S-1 pid 50930 data-market-main — bg, idle 7d, /Users/…/feat-data-market
 ```
 
-Numbered so the user can answer "W-1 remove, S-1 kill, L-2 drop". `L-` rows are
-yours to act on unless the user says drop: re-mint them on `chore/ledger` in the
-same turn, then say which ids they became. Nothing swept and nothing left → say
-exactly that in one line.
+`Books closed` is a receipt, not a request: the mapping is already written and
+committed on `chore/ledger` when you print it, one line per item so the user can
+audit the close without opening either file. No task system in the repo → the
+`T`/`FT`/`I` lines read `→ LEDGER.md (id kept)` instead of `→ Task`. `W-`/`S-`/`Q-`
+rows are numbered so the user can answer "W-1 remove, S-1 kill". Nothing swept and
+nothing left → say exactly that in one line.

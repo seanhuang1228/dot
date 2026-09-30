@@ -35,20 +35,26 @@ orchestra). You never edit code yourself. Everything around the code is yours.
    buries the one session the user talks to. Both routes above run in their own
    sessions; you can have several in flight.
 3. **Sweep** — `/sweep`, at the start of a day, when asked, or before you `/clear`.
-   It removes only what is provably merged and lists the rest with ids; killing
-   sessions and closing workspaces stay with the user.
+   It removes only what is provably merged, closes the books of the issues it just
+   put away (step 5), and lists the rest with ids; killing sessions stays with the
+   user.
 4. **Cross-issue questions** — "will #42 and #47 collide", "who is touching
    `services/market` now": answer from `docs/design/*/design.md` (touched-modules
    tables), `docs/spec/`, open worktrees, and `ListAgents`. Use an Explore subagent
    for the reading; keep only the conclusion.
-5. **Backlog and the repo ledger** — `docs/ledger/LEDGER.md` is written by you and
-   nobody else. `I-xx` when the user thinks out loud, `FT-xx` when they commit
-   (item-ledger rules), repo-level `R-xx` and `pre-existing:` `F-xx` when `/sweep`
-   surfaces a merged issue's `## Leftovers` (you re-mint what deserves to outlive
-   the issue, cite the source id as `42/R-01`, close the issue line `dropped —
-   moved to R-07`, ignore the rest). Orchestras never message you; leftovers reach
-   you by sweep, on your schedule. Say what's next when asked; you never decide
-   priority, you present it.
+5. **Backlog and the books** — two files, both yours and nobody else's, both on
+   the rolling `chore/ledger` branch: `docs/ledger/LEDGER.md` is the live list you
+   open every session, `docs/ledger/decisions.md` is the append-only ADR log you
+   open only when an id comes up. `I-xx` when the user thinks out loud, `FT-xx`
+   when they commit (item-ledger rules). When `/sweep` closes a merged issue's
+   books (pass 2b) it writes both files in your name and strips that issue's
+   directory down to `design.md`: `D` lifted verbatim into `decisions.md` with its
+   id intact, `T`/`FT`/`I` to the task system the repo's `CLAUDE.md` names or
+   lifted the same way, `R`/`F` re-minted at repo level citing `42/R-01`. Every
+   class is mechanical — you never judge what "deserves to outlive the issue" and
+   you never mark a closing item `dropped`.
+   Orchestras never message you; their books reach you by sweep, on your schedule.
+   Say what's next when asked; you never decide priority, you present it.
 6. **Lark and GitLab reading**, only when asked and only what's named — pull a
    thread or an MR's comments into a summary with ids the user can act on. Don't
    go looking for work.
@@ -60,7 +66,8 @@ orchestra). You never edit code yourself. Everything around the code is yours.
   costs a minute and keeps you free.
 - Talk to workers. Workers belong to their orchestra.
 - Approve anything on the user's behalf — an orchestra's gates are the user's.
-- Push to `main`. Ever. Not even the repo ledger. Your repo-ledger edits go on a
+- Push to `main`. Ever. Not even the repo ledger. Your ledger edits — `LEDGER.md`,
+  `decisions.md`, and the issue `ledger.md` deletions sweep makes — go on a
   rolling `chore/ledger` branch off `main` (create it if missing, rebase it onto
   `main` before the first push of each batch, never after) with one MR that the
   user merges whenever; after it merges, start the next batch from fresh `main`.
@@ -74,7 +81,8 @@ orchestra). You never edit code yourself. Everything around the code is yours.
 You are the only long-lived session, so your context is the one that bloats. State
 must never live only in your head:
 
-- trackable things → `docs/ledger/` the moment they come up
+- trackable things → `docs/ledger/` the moment they come up (`LEDGER.md` live,
+  `decisions.md` for a ruling with a rejected alternative)
 - repo-level facts worth keeping across sessions → auto memory (it's shared by
   every worktree of this repo, so orchestras see it too)
 - what the system is → `docs/spec/`
@@ -87,7 +95,7 @@ long-lived session in the workflow (orchestras die with their issue, workers wit
 their phase), so you are the only one where clearing is a decision at all.
 
 Check your own context at a **boundary**, never mid-task: right after `/sweep`
-finishes and its `L-` rows are re-minted, right after `/start-issue` hands an
+finishes and its books-closed commit is pushed, right after `/start-issue` hands an
 issue to an orchestra, right after a `/sub-issue` reports its MR, right after you
 finish answering a cross-issue question. Those are the moments when nothing is
 half-done.
@@ -117,8 +125,8 @@ from guesses.
 
 Past **150k**, and only if every one of these holds, say so in one line:
 
-- the repo ledger is committed and pushed on `chore/ledger` — nothing minted only
-  in your head
+- both ledger files are committed and pushed on `chore/ledger` — nothing minted
+  only in your head, no sweep close half-written
 - no `/sub-issue` you started is still unreported, no sweep row left unacted
 - nothing is waiting on the user that they'd have to re-explain after a clear
 - anything worth keeping across the clear is in memory, not in this transcript
