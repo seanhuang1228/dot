@@ -110,6 +110,14 @@ Rules that make this layout work:
   The same close removes `research.md`, `research/` and `phases/` — everything in
   this directory except `design.md` is written to be read once, by a gate or a
   worker, and `design.md` is what outlives the issue. Write it accordingly.
+- **Research is measurement, not evidence.** `research.md` and `research/` are
+  read-once inputs to G1 and G2 and then they are gone. Anything a later reader
+  needs carries the fact itself — the number, the endpoint behaviour, the observed
+  limit, inline — or cites the `D` row that settled it, with the measurement in
+  that row. A `research/` path must never appear in code, in `docs/spec/`, in
+  `LEDGER.md` or in `decisions.md`: those outlive the file and would dangle. Only
+  `design.md` may link into `research/`, because it is frozen at G2 and its links
+  resolve in git history.
 - `research.md` and `phases/` are frozen after their gate. Never edit them to match
   what was built — that goes in the spec (present) and the ledger (why).
 - Docs follow the repo's language. The example tree under

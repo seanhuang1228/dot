@@ -87,8 +87,8 @@ nothing left to carry):
 - `Q` still `open` → tracked nowhere. One row in the report for the user. The
   orchestra is supposed to have closed these at G3, so an open one is a finding
   about that issue, not a backlog item.
-- A `## Leftovers` section appears only in ledgers written before 2026-09-30; it
-  duplicates rows already handled above — skip it, don't process an item twice.
+- A `## Leftovers` section, if one is there, duplicates rows already handled above
+  — skip it, don't process an item twice.
 
 Then empty the directory of everything that was working material:
 
@@ -96,6 +96,16 @@ Then empty the directory of everything that was working material:
 git rm -r docs/design/<id>-<slug>/ledger.md docs/design/<id>-<slug>/research.md \
           docs/design/<id>-<slug>/research/ docs/design/<id>-<slug>/phases/
 ```
+
+A detail file (`<ID>.md` beside `ledger.md`, `item-ledger`) travels with its row
+and is deleted with the directory — `git rm` it too, after it has landed at its
+destination:
+
+- lifted `D` → `git mv` it to `docs/ledger/8-D-31.md` (the id's `/` can't be a
+  filename), and the `decisions.md` line ends with `(→ 8-D-31.md)`.
+- re-minted `R`/`F` → `git mv` it to `docs/ledger/<new id>.md`, e.g. `R-36.md`.
+- `T`/`FT`/`I` going to a task system → its body becomes the Task description;
+  the file is deleted, not moved. Lifted instead of tasked → same `git mv` as `D`.
 
 `design.md` stays and is the only thing that stays — it is the issue's durable
 record (goal, AC, Spec 改動 table, touched modules, phase list), and the

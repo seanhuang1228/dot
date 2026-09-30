@@ -174,6 +174,10 @@ opts) when launching each subagent — don't leave them defaulted.
    - **pass-criteria compliance**: does the implementation actually satisfy step 1's
      pass criteria, not just "does it compile and pass its own tests" — a subagent
      grading its own contract can miss criteria the tests didn't encode
+   - **`research/` paths outside `docs/design/`**: a comment, doc, or migration in
+     the diff that cites `research/<something>.md` is a finding. Those files are
+     deleted when the issue closes; the fact has to be inline (the number, the
+     endpoint behaviour) or cite the `D` row that settled it
 
    Plus the profile's stack-specific review criteria **[profile]** — paste them into
    the review prompt rather than summarizing them.
