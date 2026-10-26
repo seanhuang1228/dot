@@ -95,6 +95,10 @@ and anything you'd phrase as "consider…" with no consequence attached.
    `--unique` prevents a double-post if a run is repeated. Report what went up,
    one line per comment, with the MR id.
 
+After the author pushes changes, `/mr-recheck <id>` does the second pass: it reads
+the comments posted here back off GitLab, scopes itself to what changed since, and
+returns a card without posting anything.
+
 ## Never
 
 - `glab mr approve`, `glab mr merge`, `glab mr update`, `glab mr rebase`,

@@ -585,7 +585,8 @@ All phases passed:
    environment gives you.
 5. Tell the user: MR URL, open findings by id, anything deferred. Then stop. The
    session's job is over; a review-comment round is a new instruction from the
-   user. Leave the issue worktree and this workspace in place — `<repo>-main`'s
+   user, and `/mr-comments` is how it arrives — you stay in this tab until the MR
+   merges, because that round needs the design you are holding. Leave the issue worktree and this workspace in place — `<repo>-main`'s
    `/sweep` closes the workspace and removes the worktree once the MR is merged
    and you're idle. You can't close the room you're sitting in.
 
